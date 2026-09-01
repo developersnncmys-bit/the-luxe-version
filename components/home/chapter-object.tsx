@@ -34,7 +34,7 @@ const BEAT_1_INSET: MediaTile = {
 
 // Beat 2 — LEFT hero card = VIDEO, RIGHT inset = IMAGE (mirrored)
 const BEAT_2_HERO: MediaTile = {
-  kind: "video",
+  kind: "image",
   src: "/images/smiplicity-section.png",
   poster: "/images/smiplicity-section.png",
   kicker: "The Reveal",
