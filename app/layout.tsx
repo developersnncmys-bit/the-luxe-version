@@ -1,0 +1,56 @@
+import type { Metadata } from "next";
+import { Inter, Inter_Tight, Noto_Serif_Display } from "next/font/google";
+import { SmoothScroll } from "@/components/site/smooth-scroll";
+import { Nav } from "@/components/site/nav";
+import { Footer } from "@/components/site/footer";
+import { Preloader } from "@/components/ui/preloader";
+import "./globals.css";
+
+const display = Inter_Tight({
+  subsets: ["latin"],
+  weight: ["500", "600", "700", "800"],
+  variable: "--font-display",
+  display: "swap"
+});
+
+const sans = Inter({
+  subsets: ["latin"],
+  weight: ["300", "400", "500"],
+  variable: "--font-sans",
+  display: "swap"
+});
+
+const serifDisplay = Noto_Serif_Display({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-serif-display",
+  display: "swap"
+});
+
+export const metadata: Metadata = {
+  title: "THE LUXE VERSION — INTERIOR, REDEFINED.",
+  description:
+    "A house of premium interior decor. Pieces and rooms conceived as compositions.",
+  metadataBase: new URL("https://theluxeversion.example"),
+  openGraph: {
+    title: "THE LUXE VERSION",
+    description: "Interior, redefined.",
+    type: "website"
+  }
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en" className={`${display.variable} ${sans.variable} ${serifDisplay.variable}`}>
+      <body className="font-sans bg-ink text-chalk antialiased">
+        <Preloader />
+        <SmoothScroll>
+          <Nav />
+          <main>{children}</main>
+          <Footer />
+        </SmoothScroll>
+      </body>
+    </html>
+  );
+}

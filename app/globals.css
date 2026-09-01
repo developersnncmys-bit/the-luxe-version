@@ -1,0 +1,102 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ink: #0A0A0A;
+  --chalk: #FAFAFA;
+  --fog: #8A857D;
+  --brass: #B08D57;
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+html, body {
+  background: var(--ink);
+  color: var(--chalk);
+  min-height: 100%;
+}
+
+html.lenis, html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+.lenis.lenis-stopped { overflow: hidden; }
+.lenis.lenis-scrolling iframe { pointer-events: none; }
+
+::selection { background: var(--chalk); color: var(--ink); }
+
+/* Signature Chanel-style CTA: tiny uppercase text sitting above a short vertical rule */
+.cta-rule {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.6875rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: inherit;
+}
+.cta-rule::after {
+  content: "";
+  display: block;
+  width: 1px;
+  height: 2.25rem;
+  background: currentColor;
+  opacity: 0.7;
+  transition: height 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.cta-rule:hover::after { height: 3rem; }
+
+/* Thin outlined rectangular CTA — Chanel "TRY ON" pattern */
+.cta-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1.5rem;
+  border: 1px solid currentColor;
+  font-size: 0.6875rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  transition: background-color 500ms cubic-bezier(0.22, 1, 0.36, 1),
+              color 500ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.cta-outline:hover {
+  background-color: currentColor;
+  color: var(--ink);
+}
+.cta-outline--dark:hover { color: var(--chalk); background-color: var(--ink); }
+
+/* Vertical marginalia label */
+.vertical-label {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  font-size: 0.6875rem;
+  color: var(--fog);
+}
+
+/* Cinematic film grain */
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.06;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

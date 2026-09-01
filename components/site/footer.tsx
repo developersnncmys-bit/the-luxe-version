@@ -1,0 +1,237 @@
+"use client";
+
+import Link from "next/link";
+import { useState } from "react";
+import clsx from "clsx";
+import { motion } from "framer-motion";
+import { IconGlobe, IconChevron } from "@/components/ui/icons";
+
+const COLUMNS = [
+  {
+    title: "Explore The House",
+    links: [
+      { href: "/collections/pieces", label: "Pieces" },
+      { href: "/collections/lighting", label: "Lighting" },
+      { href: "/collections/furniture", label: "Furniture" },
+      { href: "/collections/textiles", label: "Textiles" },
+      { href: "/collections", label: "The Complete Collection" }
+    ]
+  },
+  {
+    title: "Online Services",
+    links: [
+      { href: "/payment", label: "Payment Methods" },
+      { href: "/shipping", label: "Shipping Options" },
+      { href: "/account", label: "My Account" },
+      { href: "/returns", label: "Returns" },
+      { href: "/care", label: "Care & Restoration" },
+      { href: "/faq", label: "FAQ" }
+    ]
+  },
+  {
+    title: "Studio Services",
+    links: [
+      { href: "/studio/appointment", label: "Book an appointment" },
+      { href: "/studio/bespoke", label: "Bespoke commissions" },
+      { href: "/studio/interior", label: "Interior consultation" }
+    ]
+  },
+  {
+    title: "The Luxe Version",
+    links: [
+      { href: "/maison", label: "The Maison" },
+      { href: "/journal", label: "Journal" },
+      { href: "/careers", label: "Careers" },
+      { href: "/press", label: "Press" },
+      { href: "/legal", label: "Legal Statement" },
+      { href: "/privacy", label: "Privacy Policy" }
+    ]
+  }
+];
+
+const SOCIALS = [
+  { label: "Instagram", href: "#", d: "M6 3h8a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3Zm4 4.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Zm4-1a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Z" },
+  { label: "Facebook", href: "#", d: "M11 3h3v3h-2c-.5 0-1 .3-1 1v2h3l-.5 3H11v7H8v-7H6v-3h2V6.5A3.5 3.5 0 0 1 11 3Z" },
+  { label: "YouTube", href: "#", d: "M2 7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V7Zm6.5 1.2v4.6L13 10.5 8.5 8.2Z" },
+  { label: "LinkedIn", href: "#", d: "M4 5.5a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0ZM4.5 8h2v9h-2V8Zm4 0h2v1.3c.5-.9 1.6-1.5 2.7-1.5 2 0 3.3 1.3 3.3 3.5V17h-2v-5.2c0-1.2-.6-1.9-1.6-1.9-1.1 0-1.7.8-1.7 2V17h-2V8Z" }
+];
+
+export function Footer() {
+  const [highContrast, setHighContrast] = useState(false);
+
+  return (
+    <footer className={clsx("relative bg-ink text-chalk", highContrast && "contrast-125")}>
+      {/* PINNED CLIENT-SERVICES STRIP.
+          Sticky in a bounded 200vh runway so it pins for 100vh, then releases and
+          the rest of the footer flows normally below.
+          Content is visible on enter (whileInView), no scroll-driven hiding — otherwise
+          the section would show as empty black while its opacity-0 content waits to reveal. */}
+      <div className="relative h-[200vh]">
+        <section className="sticky top-0 z-30 flex h-screen items-center bg-ink">
+          <div className="pointer-events-none absolute inset-x-0 top-16 flex justify-center md:top-20">
+            <p className="flex items-center gap-3 text-[10px] uppercase tracking-[0.32em] text-chalk/55 md:text-[11px]">
+              <span className="inline-block h-px w-8 bg-chalk/40" />
+              Client Care
+              <span className="inline-block h-px w-8 bg-chalk/40" />
+            </p>
+          </div>
+
+          <div className="mx-auto grid w-full max-w-editorial grid-cols-1 gap-14 px-6 md:grid-cols-3 md:gap-8 md:px-10">
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-10% 0px" }}
+              transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <p className="mb-5 text-[11px] font-bold uppercase tracking-[0.28em]">
+                Contact an advisor
+              </p>
+              <p className="text-[13px] leading-[1.8] text-chalk/75">
+                Please contact The Luxe Version Client Care, Monday – Sunday, 10 a.m. – 8 p.m. IST
+                (except National Holidays) via{" "}
+                <a href="mailto:clientcare@theluxeversion.example" className="underline underline-offset-4 hover:no-underline">
+                  clientcare@theluxeversion.example
+                </a>{" "}
+                or by calling{" "}
+                <a href="tel:0008000504446" className="underline underline-offset-4 hover:no-underline">
+                  000 800 050 4446
+                </a>.
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-10% 0px" }}
+              transition={{ duration: 1, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <p className="mb-5 text-[11px] font-bold uppercase tracking-[0.28em]">Find the studio</p>
+              <p className="mb-4 text-[13px] leading-[1.8] text-chalk/75">
+                Visit The Luxe Version by appointment.
+              </p>
+              <form className="flex items-center gap-3 border-b border-chalk/30 pb-2">
+                <input
+                  type="text"
+                  placeholder="City or postal code"
+                  aria-label="Find the studio"
+                  className="w-full bg-transparent text-[13px] placeholder:text-chalk/40 focus:outline-none"
+                />
+                <button type="submit" className="text-[10px] uppercase tracking-[0.22em] text-chalk/70 hover:text-chalk">
+                  Search
+                </button>
+              </form>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-10% 0px" }}
+              transition={{ duration: 1, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <p className="mb-5 text-[11px] font-bold uppercase tracking-[0.28em]">Newsletter</p>
+              <p className="mb-4 text-[13px] leading-[1.8] text-chalk/75">
+                Subscribe to receive the latest dispatches from The Luxe Version.
+              </p>
+              <Link href="/newsletter" className="cta-outline text-chalk">
+                Subscribe
+              </Link>
+            </motion.div>
+          </div>
+        </section>
+      </div>
+
+      {/* Rest of footer — flows normally below the pinned strip */}
+      <div className="relative bg-ink">
+        {/* Small centered wordmark */}
+        <div className="mx-auto max-w-editorial px-6 pt-16 pb-10 text-center md:px-10 md:pt-20 md:pb-14">
+          <div className="font-display text-[clamp(1.125rem,2.4vw,2.25rem)] font-bold uppercase leading-none tracking-[0.02em]">
+            The Luxe Version
+          </div>
+        </div>
+
+        {/* 4-col link grid */}
+        <div className="mx-auto max-w-editorial px-6 pb-16 md:px-10">
+          <div className="mb-6 flex items-center justify-end border-b border-chalk/15 pb-4">
+            <ul className="flex items-center gap-4 text-chalk/80" aria-label="Social">
+              {SOCIALS.map((s) => (
+                <li key={s.label}>
+                  <Link href={s.href} aria-label={s.label} className="block transition-opacity hover:opacity-60">
+                    <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor" aria-hidden>
+                      <path d={s.d} />
+                    </svg>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="grid grid-cols-2 gap-10 md:grid-cols-4 md:gap-6">
+            {COLUMNS.map((col) => (
+              <div key={col.title}>
+                <p className="mb-5 text-[11px] font-bold uppercase tracking-[0.22em]">
+                  {col.title}
+                </p>
+                <ul className="space-y-3 text-[13px] text-chalk/80">
+                  {col.links.map((l) => (
+                    <li key={l.href}>
+                      <Link href={l.href} className="transition-opacity hover:opacity-60">
+                        {l.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Accessibility + region + legal */}
+        <div className="mx-auto max-w-editorial px-6 pb-14 md:px-10">
+          <div className="mt-12 flex items-center justify-between border-t border-chalk/15 pt-8">
+            <label className="flex cursor-pointer items-center gap-3 text-[12px] text-chalk/75">
+              <span
+                role="switch"
+                aria-checked={highContrast}
+                tabIndex={0}
+                onClick={() => setHighContrast((v) => !v)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setHighContrast((v) => !v);
+                  }
+                }}
+                className={clsx(
+                  "relative h-5 w-9 rounded-full border border-chalk/40 transition-colors",
+                  highContrast ? "bg-chalk" : "bg-transparent"
+                )}
+              >
+                <span
+                  className={clsx(
+                    "absolute top-1/2 h-3 w-3 -translate-y-1/2 rounded-full transition-all",
+                    highContrast ? "left-[calc(100%-14px)] bg-ink" : "left-1 bg-chalk"
+                  )}
+                />
+              </span>
+              Enable high contrast
+            </label>
+          </div>
+
+          <div className="mt-6 flex flex-col-reverse gap-4 md:mt-8 md:flex-row md:items-center md:justify-between">
+            <p className="text-[11px] text-chalk/50">
+              The Luxe Version Private Limited, 5th Floor, Unit N° 505, UB City,
+              24 Vittal Mallya Road, Bengaluru 560001, India.
+            </p>
+            <button
+              type="button"
+              className="inline-flex items-center gap-2 self-start text-[11px] uppercase tracking-[0.22em] text-chalk/70 hover:text-chalk md:self-auto"
+            >
+              <IconGlobe />
+              Change location & language: India — English
+              <IconChevron />
+            </button>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
