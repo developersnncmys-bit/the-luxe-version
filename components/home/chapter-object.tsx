@@ -36,7 +36,7 @@ const BEAT_1_INSET: MediaTile = {
 const BEAT_2_HERO: MediaTile = {
   kind: "image",
   src: "/images/smiplicity-section.png",
-  poster: "/images/smiplicity-section.png",
+  alt: "The Reveal",
   kicker: "The Reveal",
   label: "The Nocturne"
 };
