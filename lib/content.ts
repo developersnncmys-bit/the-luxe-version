@@ -86,7 +86,7 @@ export const JOURNAL_ENTRIES = [
     excerpt:
       "Which brass floor lamp fits which reading chair — scale, arm reach, and shade height.",
     image:
-      "/images/studio-lamp.png"
+      "/images/lamp.png"
   },
   {
     slug: "on-the-small-balcony",
