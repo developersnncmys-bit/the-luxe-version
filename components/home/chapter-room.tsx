@@ -38,12 +38,11 @@ export function ChapterRoom() {
       const vh = window.innerHeight;
       const raw = (vh - rect.top) / (2 * vh);
       const progress = Math.max(0, Math.min(1, raw));
-      // Slide happens across most of the scroll — 0.15 → 0.9 — so it's clearly
-      // visible as you scroll, not delayed. Translate uses % of the element's own
-      // height, so it always slides fully off regardless of section height.
+      // Slide begins ONLY after the word-scrub finishes (scrub ends at 0.42).
+      // Small buffer (0.45) lets the last word settle, then slide runs 0.45 → 0.95.
       const slideProgress = Math.max(
         0,
-        Math.min(1, (progress - 0.15) / (0.9 - 0.15))
+        Math.min(1, (progress - 0.45) / (0.95 - 0.45))
       );
       const y = slideProgress * -100;
       inner.style.transform = `translateY(${y}%)`;

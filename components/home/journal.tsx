@@ -72,6 +72,7 @@ function JournalCard({
   index: number;
   scrollYProgress: MotionValue<number>;
 }) {
+  // index still used for parallax alternation and stagger delay below
   // Alternate parallax direction so adjacent cards drift opposite ways —
   // creates a subtle "breathing" rhythm across the strip.
   const parallaxRange: [string, string] =
@@ -108,16 +109,8 @@ function JournalCard({
         {/* Bottom gradient — deepens on hover so the reveal text reads cleanly */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-52 bg-gradient-to-t from-ink/80 via-ink/30 to-transparent opacity-90 transition-opacity duration-700 ease-silk group-hover:opacity-100" />
 
-        {/* Label stack — always-visible title + underline, plus hover-reveal kicker and CTA */}
+        {/* Label stack — title + underline only, no chapter numbering or CTA text */}
         <div className="absolute inset-x-0 bottom-10 z-10 flex flex-col items-center gap-3 px-4 md:bottom-14">
-          {/* Chapter nº — hidden by default, drops in on hover */}
-          <span
-            aria-hidden
-            className="pointer-events-none -translate-y-2 text-[9px] uppercase tracking-[0.32em] text-chalk/60 opacity-0 transition-all duration-500 ease-silk group-hover:translate-y-0 group-hover:opacity-100"
-          >
-            Chapter Nº {String(index + 1).padStart(2, "0")}
-          </span>
-
           <h3 className="text-center text-[11px] font-semibold uppercase tracking-[0.28em] text-chalk transition-transform duration-[700ms] ease-silk group-hover:-translate-y-1 md:text-[12px]">
             {entry.title}
           </h3>
@@ -126,14 +119,6 @@ function JournalCard({
             aria-hidden
             className="block h-px w-10 bg-chalk/70 transition-[width,background-color] duration-[600ms] ease-silk group-hover:w-20 group-hover:bg-chalk"
           />
-
-          {/* CTA — hidden by default, rises in on hover */}
-          <span
-            aria-hidden
-            className="pointer-events-none translate-y-2 text-[9px] uppercase tracking-[0.32em] text-chalk/80 opacity-0 transition-all duration-500 ease-silk group-hover:translate-y-0 group-hover:opacity-100"
-          >
-            Read chapter →
-          </span>
         </div>
       </Link>
     </motion.article>

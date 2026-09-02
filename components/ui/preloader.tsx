@@ -42,7 +42,18 @@ export function Preloader() {
           className="fixed inset-0 z-[999] flex items-center justify-center bg-ink"
           aria-hidden
         >
-          <motion.h1
+          <div className="relative flex items-center justify-center">
+            {/* Subtle white halo behind the wordmark */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute left-1/2 top-1/2 -z-0 h-[60vh] w-[70vw] -translate-x-1/2 -translate-y-1/2 rounded-full"
+              style={{
+                background:
+                  "radial-gradient(ellipse at center, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 35%, rgba(255,255,255,0) 65%)",
+                filter: "blur(40px)"
+              }}
+            />
+            <motion.h1
             initial="initial"
             animate="animate"
             variants={{
@@ -56,7 +67,7 @@ export function Preloader() {
               transform: "scaleY(1.55)",
               transformOrigin: "center"
             }}
-            className="select-none text-[clamp(2rem,6vw,7rem)] font-semibold uppercase leading-none tracking-[0.01em] text-chalk"
+            className="relative z-10 select-none text-[clamp(1.25rem,3.6vw,4rem)] font-semibold uppercase leading-none tracking-[0.01em] text-chalk"
           >
             {WORD.split("").map((ch, i) => (
               <span
@@ -82,6 +93,7 @@ export function Preloader() {
               </span>
             ))}
           </motion.h1>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>

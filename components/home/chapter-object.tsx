@@ -6,9 +6,9 @@ import {
   useTransform,
   type MotionValue
 } from "framer-motion";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
-import { IconCircleDot, IconPlay } from "@/components/ui/icons";
+import { IconPlay } from "@/components/ui/icons";
 import { SafeImage } from "@/components/ui/safe-image";
 
 // A tile in either slot can now be a video OR an image — the discriminant is `kind`.
@@ -16,36 +16,37 @@ type MediaTile =
   | { kind: "video"; src: string; poster: string; label: string; kicker: string }
   | { kind: "image"; src: string; alt: string; label: string; kicker: string };
 
-// Beat 1 — LEFT hero card = IMAGE, RIGHT inset ("Vessel — Brume") = VIDEO
+// Beat 1 — Living Room hero + dining-piece inset
 const BEAT_1_HERO: MediaTile = {
   kind: "image",
-  src: "/images/living-room1.png",
-  alt: "The Living Study",
+  src: "/images/Living-room1.png",
+  alt: "The Living Room in situ",
   kicker: "Room",
-  label: "The Living Study"
+  label: "The Living Room"
 };
 const BEAT_1_INSET: MediaTile = {
   kind: "video",
   src: "/images/dining-video.mp4",
-  poster: "/images/living-room.png",
-  kicker: "Pieces",
-  label: "Vessel — Brume"
+  // NOTE: filename on disk is capital-L `Living-room1.png` — must match exactly on Vercel/Linux.
+  poster: "/images/Living-room1.png",
+  kicker: "Dining",
+  label: "The Rectangular Dining Table"
 };
 
-// Beat 2 — LEFT hero card = VIDEO, RIGHT inset = IMAGE (mirrored)
+// Beat 2 — Sitting Room hero + pendant inset (mirrored)
 const BEAT_2_HERO: MediaTile = {
   kind: "image",
   src: "/images/smiplicity-section.png",
-  alt: "The Reveal",
-  kicker: "The Reveal",
-  label: "The Nocturne"
+  alt: "The Sitting Room in situ",
+  kicker: "Room",
+  label: "The Sitting Room"
 };
 const BEAT_2_INSET: MediaTile = {
   kind: "image",
   src: "/images/pieces-light.png",
-  alt: "Lume — Alba pendant",
+  alt: "The Brass Pendant",
   kicker: "Lighting",
-  label: "Lume — Alba"
+  label: "The Brass Pendant"
 };
 
 export function ChapterObject() {
@@ -77,7 +78,7 @@ export function ChapterObject() {
             className="col-span-12 flex items-center gap-3 text-[10px] uppercase tracking-[0.28em] text-chalk/60 md:col-span-3 md:col-start-1"
           >
             <span className="inline-block h-px w-10 bg-chalk/50" />
-            Decor for the Interior
+            Shop the Piece
           </motion.p>
           <motion.h2
             id="creations-heading"
@@ -87,11 +88,11 @@ export function ChapterObject() {
             transition={{ duration: 1.1, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="col-span-12 font-display text-[clamp(1.125rem,1.75vw,1.75rem)] font-bold uppercase leading-[1.05] tracking-[0.02em] md:col-span-8 md:col-start-4"
           >
-            Pieces and Rooms
+            See the Piece in the Room
           </motion.h2>
         </div>
 
-        {/* Beat 1 — HERO card LEFT (image), inset TOP-RIGHT (video "Vessel — Brume") */}
+        {/* Beat 1 — HERO card LEFT (Living Room image), inset TOP-RIGHT (dining video) */}
         <HeroPlusInset
           hero={BEAT_1_HERO}
           inset={BEAT_1_INSET}
@@ -100,7 +101,7 @@ export function ChapterObject() {
           mirror={false}
         />
 
-        {/* Beat 2 — HERO card RIGHT (video), inset TOP-LEFT (image) — mirrored */}
+        {/* Beat 2 — HERO card RIGHT (Sitting Room image), inset TOP-LEFT (pendant image) — mirrored */}
         <div className="mt-40 md:mt-64">
           <HeroPlusInset
             hero={BEAT_2_HERO}
@@ -153,20 +154,19 @@ function HeroPlusInset({
           <MediaCell tile={hero} sizes="(min-width: 768px) 68vw, 100vw" />
         </motion.div>
 
-        {/* Credit line — sits directly under hero, anchored to same side */}
+        {/* Hero caption — stacked kicker + bold label, matching the inset caption style. */}
         <div
           className={clsx(
-            "mt-5 flex items-center gap-4",
-            mirror ? "justify-end text-right" : "justify-start text-left"
+            "mt-4",
+            mirror ? "text-right" : "text-left"
           )}
         >
-          <span className="inline-block h-px w-10 bg-chalk/40" />
-          <p className="text-[10px] uppercase tracking-[0.28em] text-chalk/70">
+          <p className="text-[10px] uppercase tracking-[0.28em] text-chalk/60">
             {hero.kicker}
           </p>
-          <p className="text-[10px] uppercase tracking-[0.22em] text-chalk">
+          <h3 className="mt-2 font-display text-[14px] font-bold uppercase leading-[1.15] tracking-[0.01em] md:text-[16px]">
             {hero.label}
-          </p>
+          </h3>
         </div>
       </div>
 
@@ -182,16 +182,6 @@ function HeroPlusInset({
       >
         <div className="group relative aspect-[4/5] w-full overflow-hidden bg-onyx">
           <MediaCell tile={inset} sizes="(min-width: 768px) 28vw, 100vw" />
-          {/* Shoppable pin — opposite corner from the overlap edge */}
-          <span
-            className={clsx(
-              "pointer-events-none absolute flex h-9 w-9 items-center justify-center rounded-full bg-ink/60 text-chalk backdrop-blur-md",
-              mirror ? "bottom-4 right-4" : "bottom-4 left-4"
-            )}
-            aria-hidden
-          >
-            <IconCircleDot />
-          </span>
         </div>
 
         {/* Inset caption — anchored below piece, same side */}
@@ -243,42 +233,38 @@ function VideoCell({
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
 
-  const play = () => {
+  // Belt-and-braces: autoPlay attribute is not always honored (React strict-mode
+  // remount, hydration timing, Safari muted-autoplay quirks). Force play() on
+  // mount as well; the promise catch swallows the harmless AbortError that
+  // happens if the element unmounts before the play() promise resolves.
+  useEffect(() => {
     const el = videoRef.current;
     if (!el) return;
-    el.play()
-      .then(() => setPlaying(true))
-      .catch(() => void 0);
-  };
-  const pause = () => {
-    const el = videoRef.current;
-    if (!el) return;
-    el.pause();
-    el.currentTime = 0;
-    setPlaying(false);
-  };
+    el.muted = true;
+    const attempt = el.play();
+    if (attempt && typeof attempt.catch === "function") {
+      attempt.catch(() => void 0);
+    }
+  }, []);
 
   return (
-    <div
-      className="relative h-full w-full"
-      onMouseEnter={play}
-      onMouseLeave={pause}
-      onFocus={play}
-      onBlur={pause}
-    >
+    <div className="relative h-full w-full">
       <video
         ref={videoRef}
+        src={src}
+        poster={poster}
+        autoPlay
         muted
         loop
         playsInline
-        preload="metadata"
-        poster={poster}
+        preload="auto"
         aria-label={label}
+        onPlay={() => setPlaying(true)}
+        onPause={() => setPlaying(false)}
         className="h-full w-full object-cover transition-transform duration-[1600ms] ease-silk group-hover:scale-[1.03]"
-      >
-        <source src={src} type="video/mp4" />
-      </video>
+      />
 
+      {/* Play glyph acts as a loading indicator — fades out once playback begins. */}
       <span
         className={clsx(
           "pointer-events-none absolute inset-0 flex items-center justify-center transition-opacity duration-500 ease-silk",
