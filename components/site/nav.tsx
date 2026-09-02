@@ -78,7 +78,9 @@ export function Nav() {
               ? "border-transparent bg-transparent"
               : scrolled
                 ? "border-chalk/10 bg-ink/75 backdrop-blur-md"
-                : "border-transparent bg-ink/25 backdrop-blur-sm"
+                : // At the top (over the hero) — solid dark bar, no transparency.
+                  // Gives the nav a clean, distinct top strip over the hero imagery.
+                  "border-transparent bg-ink"
           )}
         >
           <div className="relative mx-auto flex h-16 max-w-editorial items-center justify-between px-6 md:h-20 md:px-10">

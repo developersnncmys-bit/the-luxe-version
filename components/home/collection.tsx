@@ -47,7 +47,7 @@ export function Collection() {
 
         <div
           ref={gridRef}
-          className="grid grid-cols-1 gap-x-6 gap-y-20 md:grid-cols-3 md:gap-x-8 md:gap-y-24"
+          className="mx-auto grid max-w-[1100px] grid-cols-1 gap-x-6 gap-y-24 md:grid-cols-3 md:gap-x-16 md:gap-y-32"
         >
           {PRODUCTS.map((p, i) => (
             <ProductTile
@@ -121,7 +121,7 @@ function ProductTile({
       style={{ x, y, scale, opacity }}
       className="group [will-change:transform,opacity]"
     >
-      <Link href={`/products/${product.handle}`} className="mx-auto block w-full max-w-[380px]">
+      <Link href={`/products/${product.handle}`} className="mx-auto block w-full max-w-[300px]">
         {/* Two-line bold caps title above image */}
         <h3 className="mb-5 font-display text-[15px] font-bold uppercase leading-[1.15] tracking-[0.02em] md:text-[17px]">
           {titleLine}
@@ -139,7 +139,7 @@ function ProductTile({
             alt={product.name}
             fallbackSeed={product.handle}
             fill
-            sizes="(min-width: 768px) 380px, 100vw"
+            sizes="(min-width: 768px) 300px, 100vw"
             className="object-cover transition-transform duration-[1600ms] ease-silk group-hover:scale-[1.04]"
           />
         </div>

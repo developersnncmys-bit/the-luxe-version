@@ -102,6 +102,11 @@ function JournalCard({
             fallbackSeed={entry.slug}
             fill
             sizes="(min-width: 768px) 25vw, 100vw"
+            quality={68}
+            // Eagerly load the first card so it's decoded by the time the
+            // section scrolls into view; the other three lazy-load normally.
+            priority={index === 0}
+            loading={index === 0 ? "eager" : "lazy"}
             className="object-cover transition-transform duration-[1800ms] ease-silk group-hover:scale-[1.08]"
           />
         </motion.div>

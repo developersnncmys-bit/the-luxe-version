@@ -55,10 +55,11 @@ export function ChapterRoom() {
 
   return (
     <>
-      {/* Section = pure sticky, SHORTER than viewport so Living Room peeks below.
-          Inner div has bg + content and gets the direct transform mutation. */}
+      {/* Section = pure sticky. Taller now (90svh) so content sits comfortably
+          vertically-centered, while a small strip of Living Room still peeks
+          below during pin. Inner div gets the direct transform mutation. */}
       <section
-        className="pointer-events-none sticky top-0 z-40 h-[70svh]"
+        className="pointer-events-none sticky top-0 z-40 h-[84svh]"
         aria-labelledby="chapter-room-heading"
       >
         <div
