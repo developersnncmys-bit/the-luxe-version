@@ -49,7 +49,7 @@ export function Collection() {
           ref={gridRef}
           className="mx-auto grid max-w-[1100px] grid-cols-1 gap-x-6 gap-y-24 md:grid-cols-3 md:gap-x-16 md:gap-y-32"
         >
-          {PRODUCTS.map((p, i) => (
+          {PRODUCTS.slice(0, 6).map((p, i) => (
             <ProductTile
               key={p.handle}
               product={p}

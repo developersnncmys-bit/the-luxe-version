@@ -2,6 +2,7 @@ import { Hero } from "@/components/home/hero";
 import { ChapterRoom } from "@/components/home/chapter-room";
 import { ChapterLook } from "@/components/home/chapter-look";
 import { ChapterObject } from "@/components/home/chapter-object";
+import { ChapterFilm } from "@/components/home/chapter-film";
 import { Interlude } from "@/components/home/interlude";
 import { Collection } from "@/components/home/collection";
 import { JournalTeaser } from "@/components/home/journal";
@@ -11,21 +12,15 @@ export default function HomePage() {
     <>
       <Hero />
       {/* Bounded runway for Chapter Room's sticky. Fragment inside = section
-          (100vh sticky) + tracker (100vh). Runway = 300vh → sticky pins for 200vh. */}
-      <div className="relative h-[300vh]">
+          (100vh sticky) + tracker (50vh). Runway = 200vh → sticky pins for 100vh
+          and slides up cleanly just before ChapterFilm scrolls into view. */}
+      <div className="relative h-[100vh]">
         <ChapterRoom />
       </div>
-      {/* Living Room and below sit BEHIND Chapter Room (z-0). -mt-[300vh] pulls
-          this wrapper UP to the SAME starting position as Chapter Room's runway.
-          Living Room's top is now directly behind Chapter Room from the moment
-          Chapter Room pins — so the bottom 30vh of viewport (below the 70svh
-          Chapter Room) already shows Living Room. As Chapter Room slides UP,
-          more Living Room is exposed. No gap. */}
-      <div className="relative z-0 -mt-[300vh] bg-ink">
-        {/* Living Room is pinned (sticky) INSIDE its own bounded runway that matches
-            Chapter Room's runway (300vh). This keeps Living Room BEHIND Chapter Room
-            for the full duration of Chapter Room's pin — so as Chapter Room slides
-            up, Living Room stays put and gets progressively revealed. */}
+      {/* Sequential flow after chapter-room — no more reveal-behind so that
+          ChapterFilm can sit between chapter-room and the Living Room reveal. */}
+      <div className="relative bg-ink">
+        <ChapterFilm />
         <div className="relative h-[300vh]">
           <ChapterLook
             pinned

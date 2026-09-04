@@ -3,6 +3,7 @@ import { Inter, Inter_Tight, Noto_Serif_Display } from "next/font/google";
 import { SmoothScroll } from "@/components/site/smooth-scroll";
 import { Nav } from "@/components/site/nav";
 import { Footer } from "@/components/site/footer";
+import { BackToTop } from "@/components/site/back-to-top";
 import { Preloader } from "@/components/ui/preloader";
 import "./globals.css";
 
@@ -29,13 +30,13 @@ const serifDisplay = Noto_Serif_Display({
 });
 
 export const metadata: Metadata = {
-  title: "THE LUXE VERSION — INTERIOR, REDEFINED.",
+  title: "THE LUXE VERSION — SHOWPIECES & LIGHT, REDEFINED.",
   description:
-    "A house of premium interior decor. Pieces and rooms conceived as compositions.",
+    "A house of decorative showpieces, lighting and mirrors — pieces conceived as compositions.",
   metadataBase: new URL("https://theluxeversion.example"),
   openGraph: {
     title: "THE LUXE VERSION",
-    description: "Interior, redefined.",
+    description: "Showpieces & light, redefined.",
     type: "website"
   }
 };
@@ -49,6 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Nav />
           <main>{children}</main>
           <Footer />
+          <BackToTop />
         </SmoothScroll>
       </body>
     </html>

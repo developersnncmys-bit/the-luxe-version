@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { IconGlobe, IconChevron } from "@/components/ui/icons";
@@ -10,10 +10,9 @@ const COLUMNS = [
   {
     title: "Explore The House",
     links: [
-      { href: "/collections/pieces", label: "Pieces" },
+      { href: "/collections/showpieces", label: "Showpieces" },
       { href: "/collections/lighting", label: "Lighting" },
-      { href: "/collections/furniture", label: "Furniture" },
-      { href: "/collections/textiles", label: "Textiles" },
+      { href: "/collections/mirrors", label: "Mirrors" },
       { href: "/collections", label: "The Complete Collection" }
     ]
   },
@@ -39,10 +38,10 @@ const COLUMNS = [
   {
     title: "The Luxe Version",
     links: [
-      { href: "/maison", label: "The Maison" },
-      { href: "/journal", label: "Journal" },
+      { href: "/house", label: "The House" },
+      { href: "/journal", label: "The Studio" },
       { href: "/careers", label: "Careers" },
-      { href: "/press", label: "Press" },
+      // { href: "/press", label: "Press" },
       { href: "/legal", label: "Legal Statement" },
       { href: "/privacy", label: "Privacy Policy" }
     ]
@@ -60,6 +59,25 @@ export function Footer() {
   const [highContrast, setHighContrast] = useState(false);
   const stripRef = useRef<HTMLElement>(null);
 
+  // Hydrate from localStorage on mount
+  useEffect(() => {
+    try {
+      setHighContrast(localStorage.getItem("highContrast") === "true");
+    } catch {}
+  }, []);
+
+  // Reflect state on <html> so global CSS overrides can key off it, and persist
+  useEffect(() => {
+    if (highContrast) {
+      document.documentElement.dataset.highContrast = "true";
+    } else {
+      delete document.documentElement.dataset.highContrast;
+    }
+    try {
+      localStorage.setItem("highContrast", String(highContrast));
+    } catch {}
+  }, [highContrast]);
+
   /* Parallax the white client-services strip against page scroll.
      Faster-than-scroll upward translate (foreground plane) — strip rises
      out of the flow as the dark footer scrolls up behind it, so it visually
@@ -71,7 +89,7 @@ export function Footer() {
   const stripY = useTransform(scrollYProgress, [0, 1], [220, -220]);
 
   return (
-    <footer className={clsx("relative bg-ink text-chalk pt-16 md:pt-24", highContrast && "contrast-125")}>
+    <footer className="relative bg-ink text-chalk pt-16 md:pt-24">
       {/* CLIENT-SERVICES STRIP — parallax layer floating above the dark footer's top edge.
           Dark pt on <footer> above gives the strip a visible dark band to sit on.
           Negative bottom margin pulls the dark footer up behind the strip's bottom edge.
@@ -241,6 +259,7 @@ export function Footer() {
               The Luxe Version Private Limited, 5th Floor, Unit N° 505, UB City,
               24 Vittal Mallya Road, Bengaluru 560001, India.
             </p>
+            {/*
             <button
               type="button"
               className="inline-flex items-center gap-2 self-start text-[11px] uppercase tracking-[0.22em] text-chalk/70 hover:text-chalk md:self-auto"
@@ -249,6 +268,15 @@ export function Footer() {
               Change location & language: India — English
               <IconChevron />
             </button>
+            */}
+            <a
+              href="https://nakshatranamahacreations.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="cursor-pointer self-start text-[11px] uppercase tracking-[0.22em] text-chalk/70 underline-offset-4 transition-colors hover:text-chalk hover:underline md:self-auto"
+            >
+              Developed by Nakshatranamaha Creations
+            </a>
           </div>
         </div>
       </div>

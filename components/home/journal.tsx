@@ -45,12 +45,13 @@ export function JournalTeaser() {
         </div>
       </div>
 
-      {/* card strip — tall portraits with breathing room */}
+      {/* card strip — tall portraits with breathing room. Home teases only 4;
+          full 9-entry gallery lives at /journal. */}
       <div
         ref={stripRef}
         className="mx-auto grid max-w-editorial grid-cols-1 gap-6 px-6 md:grid-cols-4 md:gap-8 md:px-10"
       >
-        {JOURNAL_ENTRIES.map((entry, i) => (
+        {JOURNAL_ENTRIES.slice(0, 4).map((entry, i) => (
           <JournalCard
             key={entry.slug}
             entry={entry}
@@ -59,6 +60,20 @@ export function JournalTeaser() {
           />
         ))}
       </div>
+
+      {/* View-more CTA — signature cta-rule below the strip, linking to the
+          full journal gallery. */}
+      <motion.div
+        initial={{ opacity: 0, y: 14 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-10% 0px" }}
+        transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
+        className="mt-16 flex justify-center md:mt-20"
+      >
+        <Link href="/journal" className="cta-rule text-chalk">
+          View all notes
+        </Link>
+      </motion.div>
     </section>
   );
 }

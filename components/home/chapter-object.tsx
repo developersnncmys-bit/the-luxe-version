@@ -16,37 +16,37 @@ type MediaTile =
   | { kind: "video"; src: string; poster: string; label: string; kicker: string }
   | { kind: "image"; src: string; alt: string; label: string; kicker: string };
 
-// Beat 1 — Living Room hero + dining-piece inset
+// Beat 1 — Chandelier hero + Living Room context inset
 const BEAT_1_HERO: MediaTile = {
   kind: "image",
-  src: "/images/Living-room1.png",
-  alt: "The Living Room in situ",
-  kicker: "Room",
-  label: "The Living Room"
+  src: "/images/lighting/light1.png",
+  alt: "The Sculptural Chandelier",
+  kicker: "Lighting",
+  label: "The Sculptural Chandelier"
 };
 const BEAT_1_INSET: MediaTile = {
   kind: "video",
-  src: "/images/dining-video.mp4",
+  src: "/images/living-room1.mp4",
   // NOTE: filename on disk is capital-L `Living-room1.png` — must match exactly on Vercel/Linux.
   poster: "/images/Living-room1.png",
-  kicker: "Dining",
-  label: "The Rectangular Dining Table"
+  kicker: "In Situ",
+  label: "In the Living Room"
 };
 
-// Beat 2 — Sitting Room hero + pendant inset (mirrored)
+// Beat 2 — Sculptural showpiece hero + Sitting Room context inset (mirrored)
 const BEAT_2_HERO: MediaTile = {
   kind: "image",
-  src: "/images/smiplicity-section.png",
-  alt: "The Sitting Room in situ",
-  kicker: "Room",
-  label: "The Sitting Room"
+  src: "/images/sculptures/scu2.png",
+  alt: "The Carved Form",
+  kicker: "Showpiece",
+  label: "The Carved Form"
 };
 const BEAT_2_INSET: MediaTile = {
   kind: "image",
-  src: "/images/pieces-light.png",
-  alt: "The Brass Pendant",
-  kicker: "Lighting",
-  label: "The Brass Pendant"
+  src: "/images/smiplicity-section.png",
+  alt: "In the Sitting Room",
+  kicker: "In Situ",
+  label: "In the Sitting Room"
 };
 
 export function ChapterObject() {
@@ -140,10 +140,11 @@ function HeroPlusInset({
       transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
       className="relative"
     >
-      {/* ── HERO CARD ── ~68% width, anchored to one side. Can be video or image. */}
+      {/* ── HERO CARD ── ~60% width, anchored to one side. Moderate negative
+          space (~14%) between hero and inset — Chanel-editorial without a chasm. */}
       <div
         className={clsx(
-          "w-full md:w-[68%]",
+          "w-full md:w-[60%]",
           mirror ? "md:ml-auto" : "md:mr-auto"
         )}
       >
@@ -151,7 +152,7 @@ function HeroPlusInset({
           style={{ y: yHero }}
           className="group relative aspect-[16/10] w-full overflow-hidden bg-onyx"
         >
-          <MediaCell tile={hero} sizes="(min-width: 768px) 68vw, 100vw" />
+          <MediaCell tile={hero} sizes="(min-width: 768px) 60vw, 100vw" />
         </motion.div>
 
         {/* Hero caption — stacked kicker + bold label, matching the inset caption style. */}
@@ -175,13 +176,13 @@ function HeroPlusInset({
         style={{ y: yInset }}
         className={clsx(
           // Mobile: stacks below hero in normal flow.
-          "mt-12 w-full md:mt-0 md:absolute md:z-10 md:w-[28%] md:-top-16 lg:-top-20",
+          "mt-12 w-full md:mt-0 md:absolute md:z-10 md:w-[26%] md:-top-16 lg:-top-20",
           // Desktop: absolute to opposite corner of hero.
           mirror ? "md:left-0" : "md:right-0"
         )}
       >
         <div className="group relative aspect-[4/5] w-full overflow-hidden bg-onyx">
-          <MediaCell tile={inset} sizes="(min-width: 768px) 28vw, 100vw" />
+          <MediaCell tile={inset} sizes="(min-width: 768px) 26vw, 100vw" />
         </div>
 
         {/* Inset caption — anchored below piece, same side */}

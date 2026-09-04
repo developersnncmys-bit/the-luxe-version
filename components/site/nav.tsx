@@ -1,22 +1,41 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import clsx from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
 import { IconSearch, IconAccount, IconHeart, IconBag } from "@/components/ui/icons";
 
-const PRIMARY_LINKS = [
-  { href: "/collections", label: "The Complete Collection" },
-  { href: "/collections/pieces", label: "Pieces", tag: "New" },
-  { href: "/collections/lighting", label: "Lighting" },
-  { href: "/collections/furniture", label: "Furniture" },
-  { href: "/collections/textiles", label: "Textiles" },
+const PRIMARY_LINKS: Array<{ href: string; label: string; tag?: string }> = [
+  { href: "/", label: "Home" },
+  { href: "/collections", label: "The Collection" },
+  { href: "/edit", label: "The Edit" },
+  { href: "/house", label: "The House" },
+  { href: "/journal", label: "The Studio" }
+];
+
+// Sits inside the floating dark panel below the wordmark — sub-taxonomy of Objects + Lighting
+const COLLECTION_SUBLINKS = [
+  { href: "/collections/objects", label: "All Objects" },
+  { href: "/collections/sculptures", label: "Sculptures" },
+  { href: "/collections/vases", label: "Vases" },
+  { href: "/collections/figurines", label: "Figurines" },
+  { href: "/collections/decorative-objects", label: "Decorative Objects" },
+  { href: "/collections/tabletop", label: "Tabletop" },
+  { href: "/collections/lighting", label: "Lighting" }
+];
+
+// Sits inside a floating dark panel that drops below the navbar on hover
+const DROPDOWN_LINKS = [
+  { href: "/", label: "Home" },
+  { href: "/collections", label: "The Collection" },
+  { href: "/edit", label: "The Edit" },
+  { href: "/house", label: "The House" },
   { href: "/journal", label: "The Studio" }
 ];
 
 const SECONDARY_LINKS = [
-  { href: "/maison", label: "The Maison" },
   { href: "/studio/appointment", label: "Book an appointment" },
   { href: "/faq", label: "Client Care" },
   { href: "/careers", label: "Careers" }
@@ -24,12 +43,28 @@ const SECONDARY_LINKS = [
 
 export function Nav() {
   const [scrolled, setScrolled] = useState(false);
+  const [pastHero, setPastHero] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [footerRevealed, setFooterRevealed] = useState(false);
+  const [navHovered, setNavHovered] = useState(false);
+  const [overLight, setOverLight] = useState(false);
+  const pathname = usePathname();
+  const isProductPage = pathname.startsWith("/collections/");
+
+  // Exact match for "/" (otherwise every route matches); prefix match for the
+  // rest so /collections/showpieces highlights /collections in the top nav.
+  const isActive = (href: string) =>
+    href === "/"
+      ? pathname === "/"
+      : pathname === href || pathname.startsWith(href + "/");
 
   useEffect(() => {
     const onScroll = () => {
       setScrolled(window.scrollY > 40);
+      // Past-hero trigger — swaps the full nav for a compact rectangular panel
+      // once the hero has scrolled out of view. Small buffer so the swap fires
+      // just before the hero fully exits.
+      setPastHero(window.scrollY > window.innerHeight - 80);
       /* Footer counts as "revealed" once its top edge has scrolled into
          the top ~20% of the viewport — at that point the client-services
          strip is dominant on screen and the nav should retract. */
@@ -47,6 +82,48 @@ export function Nav() {
       window.removeEventListener("resize", onScroll);
     };
   }, []);
+
+  // Recompute scroll-derived state on route change — Nav is persistent across
+  // client-side navigations, so pastHero/scrolled would otherwise stay stale
+  // until the next scroll event fires and briefly render both bars at once.
+  // Two passes: one now (in case scroll is already correct) and one on the
+  // next frame (after Next.js scroll-restoration finishes).
+  useEffect(() => {
+    const check = () => {
+      const y = window.scrollY;
+      setScrolled(y > 40);
+      setPastHero(y > window.innerHeight - 80);
+    };
+    check();
+    const raf = requestAnimationFrame(check);
+    const t = window.setTimeout(check, 120);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.clearTimeout(t);
+    };
+  }, [pathname]);
+
+  // Watch for light-background sections (marked with data-nav-invert) sitting
+  // under the nav. Scroll-based check is the source of truth — recomputes the
+  // full set every scroll, so the state can never get stuck on stale entries.
+  useEffect(() => {
+    const NAV_BAND = 80; // pixels from viewport top the nav pill occupies
+    const check = () => {
+      const targets = document.querySelectorAll<HTMLElement>("[data-nav-invert]");
+      const anyOver = Array.from(targets).some((el) => {
+        const r = el.getBoundingClientRect();
+        return r.top < NAV_BAND && r.bottom > NAV_BAND;
+      });
+      setOverLight(anyOver);
+    };
+    check();
+    window.addEventListener("scroll", check, { passive: true });
+    window.addEventListener("resize", check);
+    return () => {
+      window.removeEventListener("scroll", check);
+      window.removeEventListener("resize", check);
+    };
+  }, [pathname]);
 
   // Lock body scroll and support Escape while the menu is open
   useEffect(() => {
@@ -66,25 +143,79 @@ export function Nav() {
   return (
     <>
       <header
+        onMouseEnter={() => setNavHovered(true)}
+        onMouseLeave={() => setNavHovered(false)}
         className={clsx(
           "fixed inset-x-0 top-0 z-50 text-chalk transition-transform duration-500 ease-silk",
           footerRevealed && !menuOpen ? "-translate-y-full" : "translate-y-0"
         )}
       >
+        {/* Compact rectangular panel — only shown after the hero has scrolled past.
+            Replaces the full navbar (wordmark + icons + sublinks) with a small
+            floating pill of the main page links. */}
+        <AnimatePresence>
+          {pastHero && !menuOpen && !isProductPage && (
+            <motion.div
+              key="nav-compact"
+              initial={{ opacity: 0, y: -12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              className="absolute inset-x-0 top-4 flex justify-center px-6 md:top-5"
+            >
+              <nav
+                aria-label="Site sections"
+                className={clsx(
+                  "shadow-lg backdrop-blur-xl transition-[background-color,border-color,color,box-shadow] duration-500 ease-silk",
+                  overLight
+                    ? "border border-ink/10 bg-chalk/90 shadow-black/10 text-ink"
+                    : "border border-chalk/15 bg-ink/85 shadow-black/20 text-chalk"
+                )}
+              >
+                <ul className="flex items-center gap-8 px-8 py-3 lg:gap-12">
+                  {DROPDOWN_LINKS.map((l) => {
+                    const active = isActive(l.href);
+                    return (
+                      <li key={l.href}>
+                        <Link
+                          href={l.href}
+                          aria-current={active ? "page" : undefined}
+                          className={clsx(
+                            "relative text-[11px] font-bold uppercase tracking-[0.28em] text-current transition-colors duration-300 ease-silk hover:opacity-70",
+                            active &&
+                              "after:absolute after:-bottom-1.5 after:left-0 after:right-0 after:h-px after:bg-current after:opacity-70"
+                          )}
+                        >
+                          {l.label}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </nav>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Full navbar — visible only over the hero. Fades out once pastHero fires. */}
         <div
           className={clsx(
-            "w-full border-b transition-[background-color,border-color,backdrop-filter] duration-500 ease-silk",
+            "group/nav w-full border-b transition-[background-color,border-color,color,backdrop-filter,opacity] duration-500 ease-silk",
             menuOpen
               ? "border-transparent bg-transparent"
-              : scrolled
-                ? "border-chalk/10 bg-ink/75 backdrop-blur-md"
-                : // At the top (over the hero) — solid dark bar, no transparency.
-                  // Gives the nav a clean, distinct top strip over the hero imagery.
-                  "border-transparent bg-ink"
+              : isProductPage
+                ? // Product pages get the inverted look permanently — white bar, ink text.
+                  "border-ink/10 bg-white text-ink"
+                : scrolled
+                  ? "border-chalk/10 bg-ink/75 backdrop-blur-md hover:border-ink/10 hover:bg-white hover:text-ink hover:backdrop-blur-none"
+                  : // At the top (over the hero) — solid dark bar; on hover, whole strip inverts to white with dark text (Chanel-style).
+                    "border-transparent bg-ink hover:bg-white hover:text-ink",
+            pastHero && !menuOpen && !isProductPage && "pointer-events-none opacity-0"
           )}
         >
-          <div className="relative mx-auto flex h-16 max-w-editorial items-center justify-between px-6 md:h-20 md:px-10">
-            {/* Left: hamburger / close toggle + Menu label */}
+          <div className="relative mx-auto flex h-16 max-w-editorial items-center justify-end px-6 md:h-20 md:px-10">
+            {/* Left: hamburger / close toggle + Menu label — hidden for now */}
+            {/*
             <button
               type="button"
               onClick={() => setMenuOpen((v) => !v)}
@@ -117,6 +248,7 @@ export function Nav() {
                 {menuOpen ? "Close" : "Menu"}
               </span>
             </button>
+            */}
 
             {/* Center: wordmark */}
             <Link
@@ -134,7 +266,13 @@ export function Nav() {
             </Link>
 
             {/* Right: utility icons */}
-            <nav className="relative z-[60] flex items-center gap-4 text-chalk/90 md:gap-5" aria-label="Utilities">
+            <nav
+              className={clsx(
+                "relative z-[60] flex items-center gap-4 transition-colors duration-500 ease-silk md:gap-5",
+                isProductPage ? "text-ink/85" : "text-chalk/90 group-hover/nav:text-ink"
+              )}
+              aria-label="Utilities"
+            >
               <button className="p-1.5 transition-opacity hover:opacity-60" aria-label="Search">
                 <IconSearch />
               </button>
@@ -149,7 +287,79 @@ export function Nav() {
               </button>
             </nav>
           </div>
+
+          {/* Below-wordmark row — swaps content based on hover:
+              unhovered = page links (Home, The Collection, …)
+              hovered = collection sublinks (All Objects, Sculptures, …) */}
+          {!menuOpen && (
+            <nav aria-label="Collections" className="hidden md:block">
+              <ul className="mx-auto flex max-w-editorial items-center justify-center gap-10 px-10 py-3 lg:gap-14">
+                {(navHovered || pathname.startsWith("/collections/") ? COLLECTION_SUBLINKS : DROPDOWN_LINKS).map((l) => {
+                  const active = isActive(l.href);
+                  return (
+                    <li key={l.href}>
+                      <Link
+                        href={l.href}
+                        aria-current={active ? "page" : undefined}
+                        className={clsx(
+                          "relative text-[11px] font-bold uppercase tracking-[0.28em] transition-colors duration-500 ease-silk",
+                          isProductPage
+                            ? "text-ink hover:text-ink/70"
+                            : "text-chalk group-hover/nav:text-ink/80 hover:!text-ink",
+                          active &&
+                            "after:absolute after:-bottom-1.5 after:left-0 after:right-0 after:h-px after:bg-current after:opacity-70"
+                        )}
+                      >
+                        {l.label}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </nav>
+          )}
         </div>
+
+        {/* Floating dark dropdown panel — appears below the navbar on hover.
+            Only over the hero (before the compact panel takes over). */}
+        <AnimatePresence>
+          {(navHovered || pathname.startsWith("/collections/")) && !menuOpen && !pastHero && (
+            <motion.div
+              key="nav-dropdown"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              className="pointer-events-none hidden justify-center pt-3 md:flex"
+            >
+              <nav
+                aria-label="Site sections"
+                className="pointer-events-auto border border-chalk/10 bg-ink/95 backdrop-blur-md"
+              >
+                <ul className="flex items-center gap-6 px-8 py-3 md:gap-8 lg:gap-10">
+                  {DROPDOWN_LINKS.map((l) => {
+                    const active = isActive(l.href);
+                    return (
+                      <li key={l.href}>
+                        <Link
+                          href={l.href}
+                          aria-current={active ? "page" : undefined}
+                          className={clsx(
+                            "relative text-[11px] font-bold uppercase tracking-[0.28em] text-chalk transition-colors duration-300 ease-silk hover:text-white",
+                            active &&
+                              "after:absolute after:-bottom-1.5 after:left-0 after:right-0 after:h-px after:bg-current after:opacity-70"
+                          )}
+                        >
+                          {l.label}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </nav>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
       {/* Full-screen overlay menu */}
@@ -174,29 +384,37 @@ export function Nav() {
                 variants={{ animate: { transition: { staggerChildren: 0.06, delayChildren: 0.1 } } }}
                 className="space-y-2 md:space-y-3"
               >
-                {PRIMARY_LINKS.map((l) => (
-                  <motion.li
-                    key={l.href}
-                    variants={{
-                      initial: { opacity: 0, y: 24 },
-                      animate: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] } }
-                    }}
-                  >
-                    <Link
-                      href={l.href}
-                      onClick={() => setMenuOpen(false)}
-                      style={{ fontFamily: "var(--font-serif-display)" }}
-                      className="group inline-flex items-baseline gap-3 text-[clamp(1.125rem,1.8vw,1.75rem)] font-light leading-[1.2] text-chalk transition-opacity hover:opacity-60"
+                {PRIMARY_LINKS.map((l) => {
+                  const active = isActive(l.href);
+                  return (
+                    <motion.li
+                      key={l.href}
+                      variants={{
+                        initial: { opacity: 0, y: 24 },
+                        animate: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] } }
+                      }}
                     >
-                      <span>{l.label}</span>
-                      {l.tag && (
-                        <span className="text-[11px] uppercase tracking-[0.24em] text-champagne font-normal">
-                          {l.tag}
-                        </span>
-                      )}
-                    </Link>
-                  </motion.li>
-                ))}
+                      <Link
+                        href={l.href}
+                        onClick={() => setMenuOpen(false)}
+                        aria-current={active ? "page" : undefined}
+                        style={{ fontFamily: "var(--font-serif-display)" }}
+                        className={clsx(
+                          "group relative inline-flex items-baseline gap-3 text-[clamp(1.125rem,1.8vw,1.75rem)] font-light leading-[1.2] text-chalk transition-opacity hover:opacity-60",
+                          active &&
+                            "after:absolute after:-bottom-1 after:left-0 after:right-0 after:h-px after:bg-current after:opacity-70"
+                        )}
+                      >
+                        <span>{l.label}</span>
+                        {l.tag && (
+                          <span className="text-[11px] uppercase tracking-[0.24em] text-champagne font-normal">
+                            {l.tag}
+                          </span>
+                        )}
+                      </Link>
+                    </motion.li>
+                  );
+                })}
               </motion.ul>
 
               <div className="mt-16 flex flex-col gap-8 border-t border-chalk/15 pt-8 md:flex-row md:items-end md:justify-between">

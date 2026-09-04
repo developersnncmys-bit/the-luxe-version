@@ -7,15 +7,14 @@ import {
   type MotionValue
 } from "framer-motion";
 import { useEffect, useRef } from "react";
-import { IconCircleDot } from "@/components/ui/icons";
 
 const BODY_TEXT =
-  "A room begins with a chair, a table, a lamp. Over the years, only some pieces stay — the brass lamp, the marble tray, the walnut chest that never dates. This is the collection for those pieces. The ones you keep.";
+  "A room is finished with a light, a mirror, a sculpted form. Over the years, only some pieces stay — the brass lamp, the arched mirror, the carved object that never dates. This is the house for those pieces. The ones you keep.";
 
 const WORDS = BODY_TEXT.split(" ");
 
 const SCRUB_START = 0.05;
-const SCRUB_END = 0.42;
+const SCRUB_END = 0.30;
 
 export function ChapterRoom() {
   const trackerRef = useRef<HTMLDivElement>(null);
@@ -36,13 +35,16 @@ export function ChapterRoom() {
     const update = () => {
       const rect = tracker.getBoundingClientRect();
       const vh = window.innerHeight;
-      const raw = (vh - rect.top) / (2 * vh);
+      // Denominator = vh (was 2*vh) so raw hits 1 at the moment the sticky
+      // unpins under the shorter 200vh runway (pin duration = 100vh).
+      const raw = (vh - rect.top) / vh;
       const progress = Math.max(0, Math.min(1, raw));
-      // Slide begins ONLY after the word-scrub finishes (scrub ends at 0.42).
-      // Small buffer (0.45) lets the last word settle, then slide runs 0.45 → 0.95.
+      // Slide runs 0.65 → 1.0 (~scroll 65-100vh), which lands right after the
+      // word-scrub finishes and completes cleanly just before ChapterFilm
+      // scrolls into view.
       const slideProgress = Math.max(
         0,
-        Math.min(1, (progress - 0.45) / (0.95 - 0.45))
+        Math.min(1, (progress - 0.65) / (1.0 - 0.65))
       );
       const y = slideProgress * -100;
       inner.style.transform = `translateY(${y}%)`;
@@ -59,7 +61,7 @@ export function ChapterRoom() {
           vertically-centered, while a small strip of Living Room still peeks
           below during pin. Inner div gets the direct transform mutation. */}
       <section
-        className="pointer-events-none sticky top-0 z-40 h-[84svh]"
+        className="pointer-events-none sticky top-0 z-40 h-auto pt-56 pb-32"
         aria-labelledby="chapter-room-heading"
       >
         <div
@@ -67,31 +69,21 @@ export function ChapterRoom() {
           style={{ willChange: "transform" }}
           className="pointer-events-auto flex h-full w-full items-center justify-center bg-ink text-chalk"
         >
-          <div className="mx-auto flex max-w-3xl flex-col items-center px-6 text-center md:px-10">
-            <motion.p
-              initial={{ opacity: 0, y: 12 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-15% 0px" }}
-              transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-              className="mb-8 text-[10px] uppercase tracking-[0.28em] text-chalk/70"
-            >
-              The Luxe Version · Interior Decor
-            </motion.p>
-
+          <div className="mx-auto flex max-w-5xl flex-col items-center px-6 text-center md:px-10">
             <motion.h2
               id="chapter-room-heading"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-15% 0px" }}
               transition={{ duration: 1.1, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-              className="font-display text-[clamp(1.125rem,1.75vw,1.75rem)] font-bold uppercase leading-[1.05] tracking-[0.02em]"
+              className="font-display text-[clamp(1.5rem,3vw,2.5rem)] font-semibold uppercase leading-[1.05] tracking-[0.005em]"
             >
-              The Art of the Room
+              More than just a piece — the one that defines the room
             </motion.h2>
 
             <p
               aria-label={BODY_TEXT}
-              className="mt-10 max-w-3xl text-[12px] uppercase leading-[1.9] tracking-[0.14em] text-chalk md:text-[13px]"
+              className="mt-8 max-w-md text-[10px] uppercase leading-[1.7] tracking-[0.16em] text-chalk md:mt-12 md:text-[11px]"
             >
               {WORDS.map((word, i) => (
                 <ScrubWord
@@ -103,19 +95,6 @@ export function ChapterRoom() {
                 />
               ))}
             </p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-15% 0px" }}
-              transition={{ duration: 1.1, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
-              className="mt-14"
-            >
-              <a href="#collection" className="cta-outline text-chalk">
-                <IconCircleDot />
-                See in your room
-              </a>
-            </motion.div>
           </div>
         </div>
       </section>

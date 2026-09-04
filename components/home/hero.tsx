@@ -2,11 +2,12 @@
 
 import Image from "next/image";
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+// useEffect kept commented alongside the disabled slider interval below.
+import { useRef, useState } from "react";
 
 const SLIDES = [
   {
-    src: "/images/hero-banner-v1.png",
+    src: "/images/home-hero2.png",
     alt: "The Luxe Version — interior in deep black velvet"
   },
   {
@@ -15,7 +16,7 @@ const SLIDES = [
   }
 ];
 
-const SLIDE_DURATION_MS = 6000;
+// const SLIDE_DURATION_MS = 4000; // slider disabled
 
 export function Hero() {
   const ref = useRef<HTMLElement>(null);
@@ -28,14 +29,15 @@ export function Hero() {
   const scale = useTransform(scrollYProgress, [0, 1], [1, 1.08]);
   const opacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
 
-  const [active, setActive] = useState(0);
+  const [active] = useState(0);
 
-  useEffect(() => {
-    const id = window.setInterval(() => {
-      setActive((i) => (i + 1) % SLIDES.length);
-    }, SLIDE_DURATION_MS);
-    return () => window.clearInterval(id);
-  }, []);
+  // Slider auto-rotation disabled for now — first slide only.
+  // useEffect(() => {
+  //   const id = window.setInterval(() => {
+  //     setActive((i) => (i + 1) % SLIDES.length);
+  //   }, SLIDE_DURATION_MS);
+  //   return () => window.clearInterval(id);
+  // }, []);
 
   return (
     <section
@@ -79,7 +81,7 @@ export function Hero() {
         </a>
       </motion.div>
 
-      {/* Slide indicators — minimal dots, bottom-right, unobtrusive */}
+      {/* Slide indicators — disabled while the slider is turned off.
       <motion.div
         style={{ opacity }}
         className="absolute bottom-10 right-6 z-10 flex items-center gap-2 md:bottom-14 md:right-10"
@@ -96,6 +98,7 @@ export function Hero() {
           />
         ))}
       </motion.div>
+      */}
     </section>
   );
 }
