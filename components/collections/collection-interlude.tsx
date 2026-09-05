@@ -22,7 +22,7 @@ export function CollectionInterlude() {
     >
       <motion.div style={{ y }} className="absolute inset-0 scale-[1.15]">
         <Image
-          src="/images/banner2.png"
+          src="/images/studio-hero.png"
           alt=""
           fill
           sizes="100vw"
