@@ -29,30 +29,35 @@ export function CategoryHero({
 
   return (
     <section ref={ref} className="relative bg-ink text-chalk">
-      {/* Split hero — image left, title right. Same shape as ObjectsHero for
-          visual continuity across the collections family. */}
-      <div className="grid grid-cols-1 md:grid-cols-12 md:min-h-[100svh]">
-        <div className="relative aspect-[4/5] overflow-hidden md:col-span-7 md:aspect-auto md:min-h-[100svh]">
-          <motion.div style={{ y, scale }} className="absolute inset-0">
-            <Image
-              src={image}
-              alt={imageAlt}
-              fill
-              priority
-              sizes="(min-width: 768px) 58vw, 100vw"
-              className="object-cover"
-            />
-          </motion.div>
-        </div>
+      {/* Full-bleed hero — image spans the viewport width; kicker + title sit
+          in a left-aligned overlay over a soft left-side scrim for legibility. */}
+      <div className="relative min-h-[90svh] w-full overflow-hidden">
+        <motion.div style={{ y, scale }} className="absolute inset-0">
+          <Image
+            src={image}
+            alt={imageAlt}
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+          />
+        </motion.div>
 
-        <div className="flex items-center justify-start px-6 py-16 md:col-span-5 md:px-14 md:py-20">
-          <div className="max-w-lg">
+        {/* Left-weighted scrim — keeps the text readable without darkening the
+            image where it doesn't need to be. */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-gradient-to-r from-ink/70 via-ink/30 to-transparent md:from-ink/60 md:via-ink/15 md:to-transparent lg:w-3/5"
+        />
+
+        <div className="relative z-10 flex min-h-[90svh] items-end px-6 pb-20 pt-32 md:px-14 md:pb-28 md:pt-40 lg:px-20 lg:pb-36">
+          <div className="max-w-xl">
             <motion.p
               initial={{ opacity: 0, y: 14 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-15% 0px" }}
               transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-              className="mb-5 text-[9px] uppercase tracking-[0.28em] text-chalk/60"
+              className="mb-6 text-[10px] uppercase tracking-[0.32em] text-chalk/70"
             >
               {kicker}
             </motion.p>
@@ -61,7 +66,7 @@ export function CategoryHero({
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-15% 0px" }}
               transition={{ duration: 1.2, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-              className="font-display text-display-md font-semibold uppercase leading-[1.05] tracking-[0.005em]"
+              className="font-display text-display-md font-semibold uppercase leading-[1.02] tracking-[0.02em]"
             >
               {title}
             </motion.h1>

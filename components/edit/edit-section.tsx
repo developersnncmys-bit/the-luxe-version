@@ -4,7 +4,7 @@ import Link from "next/link";
 import clsx from "clsx";
 import { motion } from "framer-motion";
 import { SafeImage } from "@/components/ui/safe-image";
-import type { Product } from "@/lib/content";
+import { productHref, type Product } from "@/lib/content";
 
 type Props = {
   id: string;
@@ -104,7 +104,7 @@ function EditCard({ product }: { product: Product }) {
       transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
       className="group mx-auto w-full max-w-md"
     >
-      <Link href={`/products/${product.handle}`} className="block">
+      <Link href={productHref(product)} className="block">
         <div className="relative aspect-square w-full overflow-hidden bg-onyx">
           <SafeImage
             src={product.image}

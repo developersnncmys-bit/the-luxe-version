@@ -3,8 +3,31 @@
 import Link from "next/link";
 import { motion, useScroll, useTransform, type MotionValue } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { PRODUCTS, type Product } from "@/lib/content";
+import { PRODUCTS, productHref, type Product } from "@/lib/content";
 import { SafeImage } from "@/components/ui/safe-image";
+
+// One representative piece per category, in the same order as the category
+// pages in app/collections/[category]/page.tsx. If a category has no
+// products (shouldn't happen), it's skipped rather than left blank.
+const CATEGORY_ORDER: Product["category"][] = [
+  "Sculptures",
+  "Vases",
+  "Figurines",
+  "Decorative Objects",
+  "Tabletop",
+  "Lighting"
+];
+
+const FEATURED = CATEGORY_ORDER
+  .map((cat) => PRODUCTS.find((p) => p.category === cat))
+  .filter((p): p is Product => Boolean(p));
+
+// Per-category image override for the home tiles. Falls back to the product's
+// own image if the override key is absent. Drop matching files into
+// public/images/home-tiles/ and they'll appear automatically.
+const TILE_IMAGE_OVERRIDE: Partial<Record<Product["category"], string>> = {
+  "Decorative Objects": "/images/decorative-objects/deco1.png"
+};
 
 export function Collection() {
   const isDesktop = useIsDesktop();
@@ -49,7 +72,7 @@ export function Collection() {
           ref={gridRef}
           className="mx-auto grid max-w-[1100px] grid-cols-1 gap-x-6 gap-y-24 md:grid-cols-3 md:gap-x-16 md:gap-y-32"
         >
-          {PRODUCTS.slice(0, 6).map((p, i) => (
+          {FEATURED.map((p, i) => (
             <ProductTile
               key={p.handle}
               product={p}
@@ -111,33 +134,27 @@ function ProductTile({
   const scale = useTransform(scrollYProgress, [0, 0.55], [scaleInit, 1]);
   const opacity = useTransform(scrollYProgress, [0, 0.32], [0, 1]);
 
-  // Split "Family — Variant" into two lines for the Chanel-style title.
-  const nameParts = product.name.split(" — ");
-  const [titleLine, variantLine] =
-    nameParts.length === 2 ? nameParts : [product.name, ""];
+  // Home tiles are framed as one representative per category, so the tile
+  // heading shows the category name rather than the specific product name.
+  const tileHeading = product.category;
+  const tileImage = TILE_IMAGE_OVERRIDE[product.category] ?? product.image;
 
   return (
     <motion.article
       style={{ x, y, scale, opacity }}
       className="group [will-change:transform,opacity]"
     >
-      <Link href={`/products/${product.handle}`} className="mx-auto block w-full max-w-[300px]">
-        {/* Two-line bold caps title above image */}
+      <Link href={productHref(product)} className="mx-auto block w-full max-w-[300px]">
+        {/* Category heading above image */}
         <h3 className="mb-5 font-display text-[15px] font-bold uppercase leading-[1.15] tracking-[0.02em] md:text-[17px]">
-          {titleLine}
-          {variantLine ? (
-            <>
-              <br />
-              {variantLine}
-            </>
-          ) : null}
+          {tileHeading}
         </h3>
 
         <div className="relative aspect-[4/5] w-full overflow-hidden bg-onyx">
           <SafeImage
-            src={product.image}
-            alt={product.name}
-            fallbackSeed={product.handle}
+            src={tileImage}
+            alt={product.category}
+            fallbackSeed={`home-tile-${product.category}`}
             fill
             sizes="(min-width: 768px) 300px, 100vw"
             className="object-cover transition-transform duration-[1600ms] ease-silk group-hover:scale-[1.04]"

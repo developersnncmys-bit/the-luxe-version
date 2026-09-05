@@ -73,41 +73,36 @@ export function HouseMaterials() {
   );
 }
 
-// Placeholder imagery from Unsplash — swap with commissioned material shots later.
-// If any URL 404s, SafeImage falls back to a seeded picsum photo automatically.
+// Material sample stills — pulled from public/images/materials/. Names must
+// match the filenames on disk (lowercase, .png).
 const MATERIALS = [
   {
     name: "Stone",
-    image:
-      "https://images.unsplash.com/photo-1615529162924-f8605388461d?auto=format&fit=crop&w=1200&q=80",
+    image: "/images/materials/stone.png",
     body:
       "Travertine, marble, alabaster — cool to the hand, warm in the eye."
   },
   {
     name: "Ceramic",
-    image:
-      "https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?auto=format&fit=crop&w=1200&q=80",
+    image: "/images/materials/ceramic.png",
     body:
       "Thrown, glazed and fired at the studio's own kilns."
   },
   {
     name: "Glass",
-    image:
-      "https://images.unsplash.com/photo-1516870926717-cbd0b8a6b8d1?auto=format&fit=crop&w=1200&q=80",
+    image: "/images/materials/glass.png",
     body:
       "Hand-blown by a small circle of makers, breath still on the piece."
   },
   {
     name: "Metal",
-    image:
-      "https://images.unsplash.com/photo-1519452575417-564c1401ecc0?auto=format&fit=crop&w=1200&q=80",
+    image: "/images/materials/metal.png",
     body:
       "Unlacquered brass and cast bronze — finishes that darken with the years."
   },
   {
     name: "Wood",
-    image:
-      "https://images.unsplash.com/photo-1509395176047-4a66953fd231?auto=format&fit=crop&w=1200&q=80",
+    image: "/images/materials/wood.png",
     body:
       "Walnut, oak, and blackened ash — hand-carved, oiled rather than sealed."
   }

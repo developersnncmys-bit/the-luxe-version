@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { PRODUCTS } from "@/lib/content";
-import { ObjectsHero } from "@/components/collections/objects/objects-hero";
+import { CategoryHero } from "@/components/collections/category/category-hero";
 import { ObjectsCatalog } from "@/components/collections/objects/objects-catalog";
 
 export const metadata: Metadata = {
@@ -15,7 +15,13 @@ export default function ObjectsPage() {
 
   return (
     <>
-      <ObjectsHero />
+      <CategoryHero
+        kicker="The Collection"
+        title="Objects"
+        description="Sculptural, decorative and quiet — the objects that finish a room. Sculptures in hand-carved wood and cast bronze, vessels wheel-thrown in stoneware and glass, small figurines, decorative mirrors and tabletop pieces for the dining table. Each conceived as a composition, sized to be lived with."
+        image="/images/product-banners/allobjects-banner.png"
+        imageAlt="An arrangement of objects — a curated composition"
+      />
       <ObjectsCatalog products={objects} />
     </>
   );

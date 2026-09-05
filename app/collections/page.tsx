@@ -62,7 +62,10 @@ export default function CollectionsPage() {
   const active = CATEGORY_CONFIG
     .map((c) => ({
       ...c,
-      products: PRODUCTS.filter((p) => p.category === c.label)
+      // Cap at 3 per category — the collections overview is a taste of each
+      // category, not the full grid; the dedicated /collections/{slug} page
+      // shows every piece.
+      products: PRODUCTS.filter((p) => p.category === c.label).slice(0, 3)
     }))
     .filter((c) => c.products.length > 0);
 

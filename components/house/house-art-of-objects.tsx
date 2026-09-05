@@ -58,7 +58,7 @@ export function HouseArtOfObjects() {
         >
           <div className="relative aspect-[16/9] w-full overflow-hidden bg-onyx">
             <Image
-              src="/images/sculpture-chair.png"
+              src="/images/house.png"
               alt="A single sculpted form — the room around it, kept quiet"
               fill
               sizes="100vw"

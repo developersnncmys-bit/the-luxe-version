@@ -21,8 +21,6 @@ export function JournalHero() {
       ref={ref}
       className="relative h-[100svh] w-full overflow-hidden bg-ink text-chalk grain"
     >
-      {/* Deliberately heavy wash — the image is atmosphere; the title is the point.
-          Contrasts with Collection (image-forward) and Edit (magazine cover). */}
       <motion.div style={{ y, scale }} className="absolute inset-0">
         <Image
           src="/images/studio-hero.png"
@@ -30,9 +28,9 @@ export function JournalHero() {
           fill
           priority
           sizes="100vw"
-          className="object-cover opacity-70"
+          className="object-cover"
         />
-        <div className="absolute inset-0 bg-ink/70" />
+        <div className="absolute inset-0 bg-ink/20" />
       </motion.div>
 
       <motion.div

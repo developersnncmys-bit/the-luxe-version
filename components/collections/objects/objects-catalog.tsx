@@ -5,7 +5,13 @@ import Link from "next/link";
 import clsx from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
 import { SafeImage } from "@/components/ui/safe-image";
-import type { Product } from "@/lib/content";
+import { productHref, type Product } from "@/lib/content";
+import {
+  FilterDrawer,
+  FilterIcon,
+  applyProductFilters,
+  getAvailableMaterials
+} from "@/components/collections/filters/product-filters";
 
 type FilterId = "all" | "sculptures" | "vases" | "figurines" | "decorative-objects" | "tabletop";
 
@@ -26,12 +32,54 @@ const CHIPS: Chip[] = [
 
 export function ObjectsCatalog({ products }: { products: Product[] }) {
   const [active, setActive] = useState<FilterId>("all");
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedMaterials, setSelectedMaterials] = useState<Set<string>>(
+    () => new Set()
+  );
+  const [selectedPrices, setSelectedPrices] = useState<Set<string>>(
+    () => new Set()
+  );
 
-  const visible = useMemo(() => {
+  // 1. Chip narrows by category.
+  const chipFiltered = useMemo(() => {
     if (active === "all") return products;
     const match = CHIPS.find((c) => c.id === active)?.match;
     return match ? products.filter((p) => p.category === match) : products;
   }, [active, products]);
+
+  // 2. Available materials adapt to the current chip selection — only surface
+  //    material keywords that at least one currently-visible product has.
+  const availableMaterials = useMemo(
+    () => getAvailableMaterials(chipFiltered),
+    [chipFiltered]
+  );
+
+  // 3. Drawer filters (material + price) apply on top of the chip filter.
+  const visible = useMemo(
+    () => applyProductFilters(chipFiltered, selectedMaterials, selectedPrices),
+    [chipFiltered, selectedMaterials, selectedPrices]
+  );
+
+  const activeDrawerCount = selectedMaterials.size + selectedPrices.size;
+
+  const toggleMaterial = (kw: string) =>
+    setSelectedMaterials((prev) => {
+      const next = new Set(prev);
+      next.has(kw) ? next.delete(kw) : next.add(kw);
+      return next;
+    });
+
+  const togglePrice = (key: string) =>
+    setSelectedPrices((prev) => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
+
+  const clearDrawerFilters = () => {
+    setSelectedMaterials(new Set());
+    setSelectedPrices(new Set());
+  };
 
   // Build a thumbnail per chip: first product in that category, or the first
   // product overall for the "all" chip. Purely visual — clickability lives
@@ -62,14 +110,17 @@ export function ObjectsCatalog({ products }: { products: Product[] }) {
       <div className="border-t border-chalk/10 bg-ink">
         <div className="mx-auto max-w-editorial px-6 py-5 md:px-14 md:py-7">
           <div className="flex items-center gap-4 md:gap-8">
-            {/* FILTERS — icon + label. Non-functional stub for now; the chip row is the actual filter. */}
             <button
               type="button"
+              onClick={() => setDrawerOpen(true)}
               className="hidden shrink-0 items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-chalk/85 transition-colors hover:text-chalk md:inline-flex"
               aria-label="Open filters"
             >
               <FilterIcon />
               Filters
+              {activeDrawerCount > 0 && (
+                <span className="text-chalk/60">({activeDrawerCount})</span>
+              )}
             </button>
 
             {/* Category chip row — horizontal scroll on mobile, centered on desktop */}
@@ -142,7 +193,7 @@ export function ObjectsCatalog({ products }: { products: Product[] }) {
         <div className="mx-auto max-w-editorial px-6 md:px-14">
           <AnimatePresence mode="wait">
             <motion.div
-              key={active}
+              key={`${active}-${activeDrawerCount}`}
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
@@ -156,12 +207,35 @@ export function ObjectsCatalog({ products }: { products: Product[] }) {
           </AnimatePresence>
 
           {visible.length === 0 && (
-            <p className="mt-8 text-center text-[13px] uppercase tracking-[0.28em] text-chalk/50">
-              No pieces in this selection yet.
-            </p>
+            <div className="mt-8 text-center">
+              <p className="text-[13px] uppercase tracking-[0.28em] text-chalk/50">
+                No pieces match this selection.
+              </p>
+              {activeDrawerCount > 0 && (
+                <button
+                  type="button"
+                  onClick={clearDrawerFilters}
+                  className="mt-8 text-[11px] uppercase tracking-[0.28em] text-chalk underline underline-offset-[6px] decoration-chalk/50 transition-colors hover:decoration-chalk"
+                >
+                  Clear filters
+                </button>
+              )}
+            </div>
           )}
         </div>
       </section>
+
+      <FilterDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        materials={availableMaterials}
+        selectedMaterials={selectedMaterials}
+        toggleMaterial={toggleMaterial}
+        selectedPrices={selectedPrices}
+        togglePrice={togglePrice}
+        onClear={clearDrawerFilters}
+        resultCount={visible.length}
+      />
     </>
   );
 }
@@ -179,7 +253,7 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
       }}
       className="group"
     >
-      <Link href={`/products/${product.handle}`} className="block text-center">
+      <Link href={productHref(product)} className="block text-center">
         <div className="relative mb-8 aspect-[4/5] w-full overflow-hidden bg-onyx">
           <SafeImage
             src={product.image}
@@ -212,27 +286,5 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
         </div>
       </Link>
     </motion.article>
-  );
-}
-
-function FilterIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 14 14"
-      fill="none"
-      aria-hidden
-      className="shrink-0"
-    >
-      <path
-        d="M0.5 3h8M10.5 3h3M0.5 7h2.5M4.5 7h9M0.5 11h8M10.5 11h3"
-        stroke="currentColor"
-        strokeWidth="1.2"
-      />
-      <circle cx="9.5" cy="3" r="1.2" stroke="currentColor" strokeWidth="1.2" />
-      <circle cx="3.5" cy="7" r="1.2" stroke="currentColor" strokeWidth="1.2" />
-      <circle cx="9.5" cy="11" r="1.2" stroke="currentColor" strokeWidth="1.2" />
-    </svg>
   );
 }

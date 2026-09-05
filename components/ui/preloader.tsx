@@ -4,15 +4,27 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 
 const WORD = "THE LUXE VERSION";
-const STAGGER = 0.07; // seconds per letter
-const LETTER_DURATION = 0.9;
-const HOLD_AFTER_WRITE = 0.55; // pause after last letter lands
-const EXIT_DURATION = 1.1;
+const STAGGER = 0.04; // seconds per letter — was 0.07
+const LETTER_DURATION = 0.55; // was 0.9
+const HOLD_AFTER_WRITE = 0.25; // was 0.55
+const EXIT_DURATION = 0.7; // was 1.1
+const SESSION_KEY = "tlv:preloader:seen";
 
 export function Preloader() {
-  const [visible, setVisible] = useState(true);
+  // Default hidden — flips to visible after the sessionStorage check on mount.
+  // This prevents a flash of the preloader on repeat navigations within a
+  // session (only the first visit sees it).
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
+    // If the user has already seen the preloader this session, skip entirely.
+    if (typeof window !== "undefined" && sessionStorage.getItem(SESSION_KEY)) {
+      return;
+    }
+
+    setVisible(true);
+    sessionStorage.setItem(SESSION_KEY, "1");
+
     // Lock scroll while the preloader occupies the viewport
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";

@@ -4,7 +4,10 @@ import { SmoothScroll } from "@/components/site/smooth-scroll";
 import { Nav } from "@/components/site/nav";
 import { Footer } from "@/components/site/footer";
 import { BackToTop } from "@/components/site/back-to-top";
+import { ScrollTopOnRoute } from "@/components/site/scroll-top-on-route";
 import { Preloader } from "@/components/ui/preloader";
+import { StoreProvider } from "@/components/store/store-provider";
+import { StoreMount } from "@/components/store/store-mount";
 import "./globals.css";
 
 const display = Inter_Tight({
@@ -46,12 +49,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${display.variable} ${sans.variable} ${serifDisplay.variable}`}>
       <body className="font-sans bg-ink text-chalk antialiased">
         <Preloader />
-        <SmoothScroll>
-          <Nav />
-          <main>{children}</main>
-          <Footer />
-          <BackToTop />
-        </SmoothScroll>
+        <StoreProvider>
+          <SmoothScroll>
+            <ScrollTopOnRoute />
+            <Nav />
+            <main>{children}</main>
+            <Footer />
+            <BackToTop />
+          </SmoothScroll>
+          <StoreMount />
+        </StoreProvider>
       </body>
     </html>
   );

@@ -1,3 +1,9 @@
+export type ProductDetail = {
+  label: string;
+  body: string;
+  image: string;
+};
+
 export type Product = {
   handle: string;
   name: string;
@@ -12,9 +18,51 @@ export type Product = {
   price: { inr: number; usd: number };
   image: string;
   aspect: "portrait" | "landscape" | "square";
+  // Detail-page fields — optional so the type stays permissive; the product
+  // detail page falls back gracefully when a field is missing.
+  material?: string;
+  gallery?: string[];
+  body?: string;
+  details?: ProductDetail[];
+  pullQuote?: string;
+  lifestyleImage?: string;
 };
 
-// Curated stand-ins. Client-facing: replace with brand photography.
+// URL slug for a product's category page. Kept in sync with the CATEGORIES
+// keys in app/collections/[category]/page.tsx.
+export function categorySlug(category: Product["category"]): string {
+  return category.toLowerCase().replace(/\s+/g, "-");
+}
+
+// Canonical product URL. All product-card call sites should use this.
+export function productHref(product: Product): string {
+  return `/collections/${categorySlug(product.category)}/${product.handle}`;
+}
+
+// Reference number displayed on the detail page — derived from handle so we
+// don't have to author a SKU per product.
+export function productRef(product: Product): string {
+  const hash = product.handle
+    .split("")
+    .reduce((acc, ch) => (acc * 31 + ch.charCodeAt(0)) >>> 0, 0);
+  return `LV-${String(hash).slice(0, 6).padStart(6, "0")}`;
+}
+
+// Related pieces for the "Discover Also" rail: same category first, then
+// other pieces from the house. Excludes the current product.
+export function getRelatedProducts(current: Product, limit = 3): Product[] {
+  const sameCategory = PRODUCTS.filter(
+    (p) => p.category === current.category && p.handle !== current.handle
+  );
+  const rest = PRODUCTS.filter(
+    (p) => p.category !== current.category && p.handle !== current.handle
+  );
+  return [...sameCategory, ...rest].slice(0, limit);
+}
+
+// Every image path below is scoped to a category folder under public/images.
+// Do not reference stock imagery (Pexels/Unsplash) or root-level images from
+// this data — the folders are the single source of truth.
 export const PRODUCTS: Product[] = [
   {
     handle: "chandelier-verre",
@@ -24,7 +72,33 @@ export const PRODUCTS: Product[] = [
       "A hand-blown glass chandelier in warm brass. Suspended presence for the dining table or a double-height entry.",
     price: { inr: 328000, usd: 4050 },
     image: "/images/lighting/light1.png",
-    aspect: "portrait"
+    aspect: "portrait",
+    material: "Hand-blown glass, unlacquered brass",
+    body:
+      "A chandelier of many small glass forms, each shaped by hand and suspended in warm, unlacquered brass. Scaled for the dining table or the double-height entry — a slow, held presence that reads as jewellery for the room. The brass is left raw; it warms and deepens with time, so the piece belongs more fully to the house each year.",
+    gallery: [
+      "/images/lighting/light1.png",
+      "/images/lighting/light2.png",
+      "/images/lighting/light3.png",
+      "/images/lighting/light4.png"
+    ],
+    details: [
+      {
+        label: "Material",
+        body:
+          "Unlacquered brass frame with hand-blown clear glass leaves. Finished by hand; the brass warms with time. Weight: 12 kg. Overall drop: 90–140 cm, made to order.",
+        image: "/images/materials/glass.png"
+      },
+      {
+        label: "Craft",
+        body:
+          "Each leaf is shaped by a single glassblower in a small studio outside Firozabad. Assembly, wiring and finishing take four to six weeks per piece.",
+        image: "/images/lighting/light6.png"
+      }
+    ],
+    pullQuote:
+      "One fixture that holds the whole room together — hung once, lived with for decades.",
+    lifestyleImage: "/images/lighting/light4.png"
   },
   {
     handle: "table-lamp-alba",
@@ -34,7 +108,32 @@ export const PRODUCTS: Product[] = [
       "A brass table lamp with an ivory linen shade. Warm enough to read by — for the side table or the console.",
     price: { inr: 68000, usd: 840 },
     image: "/images/lighting/light2.png",
-    aspect: "portrait"
+    aspect: "portrait",
+    material: "Turned brass, ivory linen shade",
+    body:
+      "A turned brass table lamp with a hand-sewn ivory linen shade. Warm enough to read by, quiet enough to leave on all evening. Sized for the side table, the console, the writing desk that wants a single warm light.",
+    gallery: [
+      "/images/lighting/light2.png",
+      "/images/lighting/light3.png",
+      "/images/lighting/light4.png",
+      "/images/lighting/light5.png"
+    ],
+    details: [
+      {
+        label: "Material",
+        body:
+          "Solid turned brass base with a hand-sewn linen shade. E27 fitting, dimmable. 52 cm overall height, 30 cm shade diameter.",
+        image: "/images/materials/metal.png"
+      },
+      {
+        label: "Craft",
+        body:
+          "The base is turned and hand-finished in a small workshop. Each shade is cut, sewn and trimmed to order — no two identical.",
+        image: "/images/lighting/light1.png"
+      }
+    ],
+    pullQuote: "The lamp you leave on until the last of the guests have gone.",
+    lifestyleImage: "/images/lighting/light5.png"
   },
   {
     handle: "sculpture-ondu",
@@ -43,8 +142,33 @@ export const PRODUCTS: Product[] = [
     description:
       "A hand-carved walnut sculpture in a dark oil finish. A single graphic form — for a mantel, an entry, or a corner that wants a line.",
     price: { inr: 96000, usd: 1180 },
-    image: "/images/sculptures/scu1.png",
-    aspect: "portrait"
+    image: "/images/sculptures/scu8.png",
+    aspect: "portrait",
+    material: "Hand-carved walnut, dark oil finish",
+    body:
+      "A sculpture carved from a single billet of walnut and finished in a dark, hand-rubbed oil that deepens over time. A graphic vertical form — for the mantel, the entry table, or the corner of a room that wants one held line.",
+    gallery: [
+      "/images/sculptures/scu1.png",
+      "/images/sculptures/scu2.png",
+      "/images/sculptures/scu3.png",
+      "/images/sculptures/scu4.png"
+    ],
+    details: [
+      {
+        label: "Material",
+        body:
+          "Solid walnut, single billet — no joins, no laminate. Dark oil finish, hand-rubbed. 72 cm tall.",
+        image: "/images/materials/wood.png"
+      },
+      {
+        label: "Craft",
+        body:
+          "Carved by a single hand from a single piece of wood. Forty hours per sculpture; signed and dated at the base.",
+        image: "/images/sculptures/scu6.png"
+      }
+    ],
+    pullQuote: "One line, held. The room finds it first, and returns to it.",
+    lifestyleImage: "/images/sculptures/scu4.png"
   },
   {
     handle: "pendant-lume",
@@ -54,7 +178,32 @@ export const PRODUCTS: Product[] = [
       "A single-drop pendant in unlacquered brass. Reads as jewellery for the room — above a console, a bar, or a corner reading chair.",
     price: { inr: 84000, usd: 1040 },
     image: "/images/lighting/light3.png",
-    aspect: "portrait"
+    aspect: "portrait",
+    material: "Unlacquered brass, single drop",
+    body:
+      "A single-drop pendant in unlacquered brass — a small, held light that reads as jewellery for the room. Hung low over a console, a bar corner, or a reading chair. The brass is raw; it warms and darkens with time.",
+    gallery: [
+      "/images/lighting/light3.png",
+      "/images/lighting/light4.png",
+      "/images/lighting/light5.png",
+      "/images/lighting/light6.png"
+    ],
+    details: [
+      {
+        label: "Material",
+        body:
+          "Unlacquered brass shade and stem. E14 fitting, 2m black fabric cord, brass ceiling rose.",
+        image: "/images/materials/metal.png"
+      },
+      {
+        label: "Craft",
+        body:
+          "Spun and hand-finished in the same brass workshop as the Verre chandelier. Made to order; drop height specified at purchase.",
+        image: "/images/lighting/light2.png"
+      }
+    ],
+    pullQuote: "Jewellery, hung.",
+    lifestyleImage: "/images/lighting/light6.png"
   },
   {
     handle: "objet-sillon",
@@ -63,8 +212,33 @@ export const PRODUCTS: Product[] = [
     description:
       "A sculpted seated form in cast bronze. For the console, the mantelpiece, or the low bookshelf that needs one thing done well.",
     price: { inr: 128000, usd: 1580 },
-    image: "/images/sculptures/scu2.png",
-    aspect: "portrait"
+    image: "/images/sculptures/scu7.png",
+    aspect: "portrait",
+    material: "Cast bronze, hand-patinated",
+    body:
+      "A sculpted seated form, sand-cast in bronze and patinated by hand. For the console, the mantelpiece, the low bookshelf that wants one thing done well. A year from clay maquette to finished bronze.",
+    gallery: [
+      "/images/sculptures/scu2.png",
+      "/images/sculptures/scu3.png",
+      "/images/sculptures/scu4.png",
+      "/images/sculptures/scu5.png"
+    ],
+    details: [
+      {
+        label: "Material",
+        body:
+          "Solid bronze, sand-cast. Hand-patinated finish that deepens with handling. 22 cm tall, 3.8 kg.",
+        image: "/images/materials/metal.png"
+      },
+      {
+        label: "Craft",
+        body:
+          "Modelled first in clay, then cast and finished in a small foundry outside Jaipur. Each piece signed and numbered.",
+        image: "/images/sculptures/scu1.png"
+      }
+    ],
+    pullQuote: "A figure at rest — the room quiets around it.",
+    lifestyleImage: "/images/sculptures/scu5.png"
   },
   {
     handle: "mirror-solis",
@@ -73,8 +247,33 @@ export const PRODUCTS: Product[] = [
     description:
       "A tall arched mirror framed in unlacquered brass — the kind that warms with time. For entryways and dressing rooms.",
     price: { inr: 96000, usd: 1180 },
-    image: "/images/mirrors.png",
-    aspect: "portrait"
+    image: "/images/decorative-objects/deco1.png",
+    aspect: "portrait",
+    material: "Unlacquered brass, antique-effect glass",
+    body:
+      "A tall arched mirror framed in unlacquered brass, glazed with slightly warm, antique-effect glass. For entryways and dressing rooms — the piece that opens a wall without cluttering it. The brass is raw and warms into the room.",
+    gallery: [
+      "/images/decorative-objects/deco1.png",
+      "/images/decorative-objects/deco2.png",
+      "/images/decorative-objects/deco3.png",
+      "/images/decorative-objects/deco4.png"
+    ],
+    details: [
+      {
+        label: "Material",
+        body:
+          "Hand-shaped brass frame with antique-effect glass. 170 × 85 cm; wall-mounted, cleats included.",
+        image: "/images/materials/metal.png"
+      },
+      {
+        label: "Craft",
+        body:
+          "Frame welded and finished by hand. Glass poured to old specification for a soft, warm reflection.",
+        image: "/images/decorative-objects/deco6.png"
+      }
+    ],
+    pullQuote: "A mirror that lengthens a room without shouting for the credit.",
+    lifestyleImage: "/images/decorative-objects/deco4.png"
   },
   {
     handle: "objet-vestige",
@@ -83,8 +282,33 @@ export const PRODUCTS: Product[] = [
     description:
       "A vessel in hand-thrown ceramic with a matte oxide glaze. Reads as sculpture on a shelf, quiet on a low table.",
     price: { inr: 74000, usd: 910 },
-    image: "/images/vases/vase1.png",
-    aspect: "portrait"
+    image: "/images/sculptures/scu4.png",
+    aspect: "portrait",
+    material: "Hand-thrown ceramic, matte iron-oxide glaze",
+    body:
+      "A vessel thrown by hand and finished in a matte iron-oxide glaze. Reads as sculpture on a shelf, quiet on a low table. One of a small kiln-fired series — no two exactly alike.",
+    gallery: [
+      "/images/vases/vase1.png",
+      "/images/vases/vase2.png",
+      "/images/vases/vase3.png",
+      "/images/vases/vase4.png"
+    ],
+    details: [
+      {
+        label: "Material",
+        body: "Stoneware clay, matte iron-oxide glaze. 34 cm tall, 18 cm mouth.",
+        image: "/images/materials/ceramic.png"
+      },
+      {
+        label: "Craft",
+        body:
+          "Thrown, glazed and fired in a small studio in Auroville. Each piece signed and dated at the foot.",
+        image: "/images/vases/vase6.png"
+      }
+    ],
+    pullQuote:
+      "Sculpture that also holds — the honest, ancient trick of the vessel.",
+    lifestyleImage: "/images/vases/vase4.png"
   },
   {
     handle: "mirror-halo",
@@ -93,8 +317,32 @@ export const PRODUCTS: Product[] = [
     description:
       "A circular mirror set in a slim brass rim. Reads as a drawing on the wall — a single line, a held moment of light.",
     price: { inr: 82000, usd: 1010 },
-    image: "/images/mirror-halo.png",
-    aspect: "portrait"
+    image: "/images/decorative-objects/deco2.png",
+    aspect: "portrait",
+    material: "Slim brass rim, mirrored glass",
+    body:
+      "A circular mirror set in a slim brass rim — a single drawn line on the wall, a held moment of light. Above a console, a low sideboard, or the quiet end of a hall.",
+    gallery: [
+      "/images/decorative-objects/deco2.png",
+      "/images/decorative-objects/deco3.png",
+      "/images/decorative-objects/deco4.png",
+      "/images/decorative-objects/deco5.png"
+    ],
+    details: [
+      {
+        label: "Material",
+        body: "Brass rim, mirrored glass. 80 cm diameter; wall-mounted.",
+        image: "/images/materials/glass.png"
+      },
+      {
+        label: "Craft",
+        body:
+          "Rim spun and finished by hand. The brass is unlacquered and will warm and darken with time.",
+        image: "/images/decorative-objects/deco1.png"
+      }
+    ],
+    pullQuote: "A drawn line, held on the wall.",
+    lifestyleImage: "/images/decorative-objects/deco5.png"
   },
   {
     handle: "mirror-lune",
@@ -103,8 +351,33 @@ export const PRODUCTS: Product[] = [
     description:
       "A freestanding cheval mirror in blackened oak, hand-oiled. For the dressing corner, the bedroom, the quiet end of a hall.",
     price: { inr: 138000, usd: 1700 },
-    image: "/images/mirror-lune.png",
-    aspect: "portrait"
+    image: "/images/decorative-objects/deco3.png",
+    aspect: "portrait",
+    material: "Blackened oak, hand-oiled",
+    body:
+      "A freestanding cheval mirror in solid, blackened oak — hand-oiled to a slow satin finish. For the dressing corner, the bedroom, the quiet end of a hall.",
+    gallery: [
+      "/images/decorative-objects/deco3.png",
+      "/images/decorative-objects/deco4.png",
+      "/images/decorative-objects/deco5.png",
+      "/images/decorative-objects/deco6.png"
+    ],
+    details: [
+      {
+        label: "Material",
+        body:
+          "Solid blackened oak frame, hand-oiled. Cast brass pivots. 180 × 65 cm freestanding.",
+        image: "/images/materials/wood.png"
+      },
+      {
+        label: "Craft",
+        body:
+          "Frame joined by traditional mortise-and-tenon; oak sourced from a single European mill. Assembled and oiled by hand.",
+        image: "/images/decorative-objects/deco2.png"
+      }
+    ],
+    pullQuote: "The mirror you dress in front of, and no other.",
+    lifestyleImage: "/images/decorative-objects/deco6.png"
   },
   {
     handle: "sculpture-monolith",
@@ -114,7 +387,32 @@ export const PRODUCTS: Product[] = [
       "A carved travertine column, upright and quiet. A single vertical gesture — for a corner, an entry, or the room that wants a still figure.",
     price: { inr: 148000, usd: 1820 },
     image: "/images/sculptures/scu3.png",
-    aspect: "portrait"
+    aspect: "portrait",
+    material: "Carved travertine, honed finish",
+    body:
+      "A carved travertine column, upright and quiet. A single vertical gesture — for a corner, an entry, or a room that wants one still figure. Honed to a soft, matte surface that catches low light.",
+    gallery: [
+      "/images/sculptures/scu3.png",
+      "/images/sculptures/scu4.png",
+      "/images/sculptures/scu5.png",
+      "/images/sculptures/scu6.png"
+    ],
+    details: [
+      {
+        label: "Material",
+        body:
+          "Solid Italian travertine. Honed matte finish. 92 cm tall, 28 kg.",
+        image: "/images/materials/stone.png"
+      },
+      {
+        label: "Craft",
+        body:
+          "Carved from a single block by a stonemason in Tuscany, then honed and sealed by hand. Six to eight weeks per piece.",
+        image: "/images/sculptures/scu2.png"
+      }
+    ],
+    pullQuote: "A still figure, standing. The room composes itself around it.",
+    lifestyleImage: "/images/sculptures/scu6.png"
   },
   {
     handle: "vase-ondule",
@@ -124,7 +422,31 @@ export const PRODUCTS: Product[] = [
       "A rippled stoneware vase, wheel-thrown and unglazed. For the console, the sideboard, the shelf that wants weight and quiet.",
     price: { inr: 58000, usd: 720 },
     image: "/images/vases/vase2.png",
-    aspect: "portrait"
+    aspect: "portrait",
+    material: "Wheel-thrown stoneware, unglazed",
+    body:
+      "A rippled stoneware vase, thrown on the wheel and left unglazed — the clay body reads directly, warm and matte. For the console, the sideboard, the shelf that wants weight and quiet.",
+    gallery: [
+      "/images/vases/vase2.png",
+      "/images/vases/vase3.png",
+      "/images/vases/vase4.png",
+      "/images/vases/vase5.png"
+    ],
+    details: [
+      {
+        label: "Material",
+        body: "Stoneware clay, unglazed. Sealed interior for water use. 42 cm tall.",
+        image: "/images/materials/ceramic.png"
+      },
+      {
+        label: "Craft",
+        body:
+          "Thrown, ribbed and fired in a single studio. Each ripple pulled by hand — the rhythm varies piece to piece.",
+        image: "/images/vases/vase1.png"
+      }
+    ],
+    pullQuote: "Weight and quiet — the shelf finally at rest.",
+    lifestyleImage: "/images/vases/vase5.png"
   },
   {
     handle: "vase-obra",
@@ -134,7 +456,32 @@ export const PRODUCTS: Product[] = [
       "A tall bronze-glazed vessel with a narrow throat. Reads sculptural empty; holds a single stem beautifully.",
     price: { inr: 96000, usd: 1180 },
     image: "/images/vases/vase3.png",
-    aspect: "portrait"
+    aspect: "portrait",
+    material: "Stoneware, bronze glaze",
+    body:
+      "A tall bronze-glazed vessel with a narrow throat. Reads sculptural when empty; holds a single stem — a branch, a long tulip — beautifully.",
+    gallery: [
+      "/images/vases/vase3.png",
+      "/images/vases/vase4.png",
+      "/images/vases/vase5.png",
+      "/images/vases/vase6.png"
+    ],
+    details: [
+      {
+        label: "Material",
+        body:
+          "Stoneware body, layered bronze glaze fired to cone 10. 46 cm tall, 6 cm mouth.",
+        image: "/images/materials/ceramic.png"
+      },
+      {
+        label: "Craft",
+        body:
+          "Thrown and glazed by hand. Bronze fluctuates in the kiln — no two vessels take the light identically.",
+        image: "/images/vases/vase2.png"
+      }
+    ],
+    pullQuote: "One stem, held. The rest of the room composes itself.",
+    lifestyleImage: "/images/vases/vase6.png"
   },
   {
     handle: "figurine-fauna",
@@ -143,8 +490,32 @@ export const PRODUCTS: Product[] = [
     description:
       "A small bronze animal figure, patinated by hand. For the shelf edge, the desk, the bookcase that wants a single occupant.",
     price: { inr: 42000, usd: 520 },
-    image: "/images/figurine-fauna.png",
-    aspect: "portrait"
+    image: "/images/figurines/figurine1.png",
+    aspect: "portrait",
+    material: "Cast bronze, hand-patinated",
+    body:
+      "A small bronze animal figure, cast and patinated by hand. For the shelf edge, the writing desk, the bookcase that wants one single quiet occupant.",
+    gallery: [
+      "/images/figurines/figurine1.png",
+      "/images/figurines/figurine2.png",
+      "/images/figurines/figurine3.png",
+      "/images/figurines/figurine4.png"
+    ],
+    details: [
+      {
+        label: "Material",
+        body: "Solid bronze, sand-cast. Hand-patinated. 14 cm.",
+        image: "/images/materials/metal.png"
+      },
+      {
+        label: "Craft",
+        body:
+          "Modelled from life, cast in a small foundry, patinated by hand. Each piece signed and numbered on the base.",
+        image: "/images/figurines/figurine6.png"
+      }
+    ],
+    pullQuote: "The shelf's quiet occupant — patient, undemanding, present.",
+    lifestyleImage: "/images/figurines/figurine4.png"
   },
   {
     handle: "figurine-anima",
@@ -153,8 +524,33 @@ export const PRODUCTS: Product[] = [
     description:
       "A hand-carved alabaster form — a small figure, softly modelled. Casts a low interior light when placed near a lamp.",
     price: { inr: 54000, usd: 670 },
-    image: "/images/figurine-anima.png",
-    aspect: "portrait"
+    image: "/images/figurines/figurine2.png",
+    aspect: "portrait",
+    material: "Hand-carved alabaster",
+    body:
+      "A hand-carved alabaster form — a small figure, softly modelled. When placed near a lamp the stone catches the light from within, casting a low interior glow.",
+    gallery: [
+      "/images/figurines/figurine2.png",
+      "/images/figurines/figurine3.png",
+      "/images/figurines/figurine4.png",
+      "/images/figurines/figurine5.png"
+    ],
+    details: [
+      {
+        label: "Material",
+        body:
+          "Solid alabaster, hand-carved and polished. Translucent under light. 18 cm.",
+        image: "/images/materials/stone.png"
+      },
+      {
+        label: "Craft",
+        body:
+          "Carved by a single hand from a single block. Alabaster sourced from a single quarry in Rajasthan.",
+        image: "/images/figurines/figurine1.png"
+      }
+    ],
+    pullQuote: "Stone that holds light — a small, interior sun.",
+    lifestyleImage: "/images/figurines/figurine5.png"
   },
   {
     handle: "figurine-perle",
@@ -163,8 +559,33 @@ export const PRODUCTS: Product[] = [
     description:
       "A porcelain pear on a low walnut plinth. A quiet gift for a bedside, an entry table, a writing desk.",
     price: { inr: 38000, usd: 470 },
-    image: "/images/figurine-perle.png",
-    aspect: "portrait"
+    image: "/images/figurines/figurine3.png",
+    aspect: "portrait",
+    material: "Hand-slipped porcelain, walnut plinth",
+    body:
+      "A porcelain pear rested on a low walnut plinth. A quiet gift for a bedside, an entry table, a writing desk — the object that says the room has been thought about.",
+    gallery: [
+      "/images/figurines/figurine3.png",
+      "/images/figurines/figurine4.png",
+      "/images/figurines/figurine5.png",
+      "/images/figurines/figurine6.png"
+    ],
+    details: [
+      {
+        label: "Material",
+        body:
+          "Slip-cast porcelain, matte white glaze. Solid walnut plinth, hand-oiled. 12 cm overall.",
+        image: "/images/materials/ceramic.png"
+      },
+      {
+        label: "Craft",
+        body:
+          "Cast, finished and glazed by hand. Plinth turned separately and hand-fitted to each piece.",
+        image: "/images/figurines/figurine2.png"
+      }
+    ],
+    pullQuote: "The small, exact gift — a fruit that never turns.",
+    lifestyleImage: "/images/figurines/figurine6.png"
   },
   {
     handle: "charger-terra",
@@ -174,7 +595,31 @@ export const PRODUCTS: Product[] = [
       "A wide stoneware charger in matte oxide. Sits under the dinner plate; reads as a low sculpture the rest of the day.",
     price: { inr: 32000, usd: 400 },
     image: "/images/table-top/table1.png",
-    aspect: "portrait"
+    aspect: "portrait",
+    material: "Stoneware, matte iron-oxide glaze",
+    body:
+      "A wide stoneware charger finished in matte iron-oxide glaze. Sits beneath the dinner plate at supper; reads as a low sculpture on the sideboard the rest of the day.",
+    gallery: [
+      "/images/table-top/table1.png",
+      "/images/table-top/table2.png",
+      "/images/table-top/table3.png",
+      "/images/table-top/table4.png"
+    ],
+    details: [
+      {
+        label: "Material",
+        body: "Stoneware clay, matte iron-oxide glaze. 32 cm diameter. Dishwasher-safe.",
+        image: "/images/materials/ceramic.png"
+      },
+      {
+        label: "Craft",
+        body:
+          "Wheel-thrown and glazed in the same Auroville studio as the Vestige vessels. Signed at the foot.",
+        image: "/images/table-top/table6.png"
+      }
+    ],
+    pullQuote: "Under the plate at eight; low sculpture by ten.",
+    lifestyleImage: "/images/table-top/table4.png"
   },
   {
     handle: "carafe-verre",
@@ -184,7 +629,32 @@ export const PRODUCTS: Product[] = [
       "A hand-blown water carafe with a slightly gathered neck. For the dinner table, the desk, the bedside.",
     price: { inr: 28000, usd: 350 },
     image: "/images/table-top/table2.png",
-    aspect: "portrait"
+    aspect: "portrait",
+    material: "Hand-blown clear glass",
+    body:
+      "A hand-blown water carafe with a slightly gathered neck. For the dinner table, the writing desk, the bedside — the piece that makes even water feel considered.",
+    gallery: [
+      "/images/table-top/table2.png",
+      "/images/table-top/table3.png",
+      "/images/table-top/table4.png",
+      "/images/table-top/table5.png"
+    ],
+    details: [
+      {
+        label: "Material",
+        body:
+          "Hand-blown clear glass, 1L capacity. Sold as a piece; a matching tumbler set is available separately.",
+        image: "/images/materials/glass.png"
+      },
+      {
+        label: "Craft",
+        body:
+          "Blown by the same glassblowers who shape the Verre chandelier. Small bubbles and slight asymmetries are inherent to the process.",
+        image: "/images/table-top/table1.png"
+      }
+    ],
+    pullQuote: "Even water, held with intent.",
+    lifestyleImage: "/images/table-top/table5.png"
   },
   {
     handle: "runner-bruma",
@@ -194,18 +664,278 @@ export const PRODUCTS: Product[] = [
       "A long linen runner in undyed flax, hand-hemmed. Softens the wood, holds the plates, wears in with use.",
     price: { inr: 24000, usd: 300 },
     image: "/images/table-top/table3.png",
-    aspect: "portrait"
+    aspect: "portrait",
+    material: "Undyed European flax, hand-hemmed",
+    body:
+      "A long linen runner in undyed flax, hand-hemmed at both ends. Softens the wood, holds the plates, wears in with use — the older it gets, the better it looks.",
+    gallery: [
+      "/images/table-top/table3.png",
+      "/images/table-top/table4.png",
+      "/images/table-top/table5.png",
+      "/images/table-top/table6.png"
+    ],
+    details: [
+      {
+        label: "Material",
+        body:
+          "100% European flax, undyed. 240 × 45 cm. Machine-washable cold; line-dry.",
+        image: "/images/materials/wood.png"
+      },
+      {
+        label: "Craft",
+        body:
+          "Woven in a small Belgian mill and hand-hemmed. The flax softens and pales with each wash.",
+        image: "/images/table-top/table2.png"
+      }
+    ],
+    pullQuote: "Softens the wood, holds the plates, wears in like a favourite shirt.",
+    lifestyleImage: "/images/table-top/table6.png"
+  },
+  {
+    handle: "sconce-fumo",
+    name: "Sconce — Fumo",
+    category: "Lighting",
+    description:
+      "A brass wall sconce with a small hand-sewn linen shade. Warm to sit beside, quiet on the wall.",
+    price: { inr: 46000, usd: 570 },
+    image: "/images/lighting/light4.png",
+    aspect: "portrait",
+    material: "Turned brass, linen shade",
+    body:
+      "A brass wall sconce with a small hand-sewn linen shade. Hung on either side of a bed, a mantel, or a corridor — warm to sit beside, quiet on the wall."
+  },
+  {
+    handle: "floor-lamp-colonne",
+    name: "Floor Lamp — Colonne",
+    category: "Lighting",
+    description:
+      "A tall column lamp in unlacquered brass. A single warm light for a reading corner or the edge of a sofa.",
+    price: { inr: 118000, usd: 1450 },
+    image: "/images/lighting/light5.png",
+    aspect: "portrait",
+    material: "Unlacquered brass, silk shade",
+    body:
+      "A slim brass column with a hand-sewn silk shade. Placed at the end of a sofa or beside a reading chair — one warm light, sized to last a lifetime."
+  },
+  {
+    handle: "chandelier-prisme",
+    name: "Chandelier — Prisme",
+    category: "Lighting",
+    description:
+      "A faceted glass chandelier on a blackened bronze frame. For the low-ceilinged room that still wants presence.",
+    price: { inr: 268000, usd: 3300 },
+    image: "/images/lighting/light6.png",
+    aspect: "portrait",
+    material: "Cut glass, blackened bronze",
+    body:
+      "A compact chandelier of faceted glass panels on a blackened bronze frame. Sized for a lower ceiling — the dining nook, the entry, the small hall that still wants presence."
+  },
+  {
+    handle: "sculpture-vela",
+    name: "Sculpture — Vela",
+    category: "Sculptures",
+    description:
+      "A leaning travertine form, softly weathered. For an entry, a bay window, a corner that wants a held pause.",
+    price: { inr: 174000, usd: 2150 },
+    image: "/images/sculptures/scu4.png",
+    aspect: "portrait",
+    material: "Carved travertine, weathered finish",
+    body:
+      "A leaning travertine form, softly weathered by hand. For an entry, a bay window, a corner that wants a held pause — the piece the light finds first each morning."
+  },
+  {
+    handle: "objet-rive",
+    name: "Objet — Rive",
+    category: "Sculptures",
+    description:
+      "A low bronze form, patinated to a soft green. For the coffee table, the low shelf, the object that wants weight.",
+    price: { inr: 112000, usd: 1380 },
+    image: "/images/sculptures/scu5.png",
+    aspect: "portrait",
+    material: "Cast bronze, verdigris patina",
+    body:
+      "A low, curled bronze form, cast solid and finished with a hand-applied verdigris patina. Small enough to hold; heavy enough to anchor a shelf or a low table."
+  },
+  {
+    handle: "sculpture-passage",
+    name: "Sculpture — Passage",
+    category: "Sculptures",
+    description:
+      "A double-arched walnut form in dark oil. Reads as one line seen from either side of a room.",
+    price: { inr: 132000, usd: 1620 },
+    image: "/images/sculptures/scu6.png",
+    aspect: "portrait",
+    material: "Hand-carved walnut, dark oil",
+    body:
+      "A double-arched walnut sculpture carved from a single billet and finished in a dark, hand-rubbed oil. Reads as one continuous line from either side of the room."
+  },
+  {
+    handle: "tray-perche",
+    name: "Tray — Perche",
+    category: "Decorative Objects",
+    description:
+      "A long unlacquered-brass tray for the entry console. Holds keys, a bowl, the small things the house needs.",
+    price: { inr: 42000, usd: 520 },
+    image: "/images/decorative-objects/deco4.png",
+    aspect: "portrait",
+    material: "Hand-turned unlacquered brass",
+    body:
+      "A long brass tray, hand-turned and left unlacquered. Sits on the entry console; holds keys, a bowl, a folded letter — the small things the house needs at hand."
+  },
+  {
+    handle: "bowl-onda",
+    name: "Bowl — Onda",
+    category: "Decorative Objects",
+    description:
+      "A shallow stone bowl in soft grey travertine. For the low table, the sideboard, the shelf that wants one form.",
+    price: { inr: 58000, usd: 720 },
+    image: "/images/decorative-objects/deco5.png",
+    aspect: "portrait",
+    material: "Hand-carved travertine",
+    body:
+      "A shallow bowl carved from a single piece of soft grey travertine, honed to a matte finish. For the low table, the sideboard, the shelf that wants one form."
+  },
+  {
+    handle: "frame-silhouette",
+    name: "Frame — Silhouette",
+    category: "Decorative Objects",
+    description:
+      "A slim blackened-oak frame, hand-mitred. For a single print, a photograph, a piece worth setting apart.",
+    price: { inr: 36000, usd: 440 },
+    image: "/images/decorative-objects/deco6.png",
+    aspect: "portrait",
+    material: "Blackened oak, museum glass",
+    body:
+      "A slim blackened-oak frame, hand-mitred and finished in a soft satin oil. For a single print, a photograph, a piece worth setting apart on the wall."
+  },
+  {
+    handle: "vase-colline",
+    name: "Vase — Colline",
+    category: "Vases",
+    description:
+      "A rounded stoneware vase in a warm ochre glaze. Wide enough for branches, quiet enough to stand empty.",
+    price: { inr: 62000, usd: 770 },
+    image: "/images/vases/vase4.png",
+    aspect: "portrait",
+    material: "Stoneware, ochre glaze",
+    body:
+      "A rounded stoneware vase finished in a warm, hand-mixed ochre glaze. Wide enough for a bough of leaves; quiet enough to stand alone on a low table."
+  },
+  {
+    handle: "vessel-argile",
+    name: "Vessel — Argile",
+    category: "Vases",
+    description:
+      "A hand-pinched terracotta vessel, unglazed. The clay reads warm and matte — a shelf object first, a vase second.",
+    price: { inr: 44000, usd: 540 },
+    image: "/images/vases/vase5.png",
+    aspect: "portrait",
+    material: "Hand-pinched terracotta, unglazed",
+    body:
+      "A hand-pinched terracotta vessel, left unglazed so the clay reads directly. A shelf object first, a vase second — the shape carries even when empty."
+  },
+  {
+    handle: "vase-sable",
+    name: "Vase — Sable",
+    category: "Vases",
+    description:
+      "A tall glass vase in a soft sand tint. Reads sculptural in daylight, holds a single tall stem beautifully.",
+    price: { inr: 78000, usd: 960 },
+    image: "/images/vases/vase6.png",
+    aspect: "portrait",
+    material: "Hand-blown tinted glass",
+    body:
+      "A tall glass vase, hand-blown with a soft sand tint pulled through the wall. Reads sculptural in daylight; holds a single tall stem — a branch, a lily — beautifully."
+  },
+  {
+    handle: "figurine-souche",
+    name: "Figurine — Souche",
+    category: "Figurines",
+    description:
+      "A small carved-walnut animal on a low base. A quiet occupant for the desk, the shelf, the entry.",
+    price: { inr: 34000, usd: 420 },
+    image: "/images/figurines/figurine4.png",
+    aspect: "portrait",
+    material: "Hand-carved walnut",
+    body:
+      "A small walnut animal, carved from a single block and set on a low base. A quiet occupant for the desk, the shelf, the entry — the object that acknowledges the room."
+  },
+  {
+    handle: "figurine-echo",
+    name: "Figurine — Écho",
+    category: "Figurines",
+    description:
+      "A pair of small porcelain forms — sold together, sit together. A study in near-symmetry.",
+    price: { inr: 46000, usd: 570 },
+    image: "/images/figurines/figurine5.png",
+    aspect: "portrait",
+    material: "Slip-cast porcelain, matte white",
+    body:
+      "A pair of small porcelain forms — sold together, meant to sit together. A study in near-symmetry; each piece cast slightly differently from the other."
+  },
+  {
+    handle: "figurine-petite",
+    name: "Figurine — Petite",
+    category: "Figurines",
+    description:
+      "A miniature bronze form on a marble plinth. Small enough for a bedside; considered enough to keep.",
+    price: { inr: 48000, usd: 590 },
+    image: "/images/figurines/figurine6.png",
+    aspect: "portrait",
+    material: "Cast bronze, marble plinth",
+    body:
+      "A miniature bronze form set on a small marble plinth. Small enough for a bedside table; considered enough to be a piece that stays with a person for years."
+  },
+  {
+    handle: "salt-cellar-sel",
+    name: "Salt Cellar — Sel",
+    category: "Tabletop",
+    description:
+      "A small pinch-pot in matte white porcelain. For the dinner table, for the kitchen counter, for close at hand.",
+    price: { inr: 12000, usd: 150 },
+    image: "/images/table-top/table4.png",
+    aspect: "portrait",
+    material: "Hand-thrown porcelain, matte glaze",
+    body:
+      "A small hand-thrown porcelain pinch-pot for salt. Left on the table between meals; kept beside the stove the rest of the time — the small vessel the kitchen keeps returning to."
+  },
+  {
+    handle: "pitcher-cara",
+    name: "Pitcher — Cara",
+    category: "Tabletop",
+    description:
+      "A stoneware pitcher in matte cream. Wide-mouthed for water, milk, a bough of herbs in warmer months.",
+    price: { inr: 26000, usd: 320 },
+    image: "/images/table-top/table5.png",
+    aspect: "portrait",
+    material: "Wheel-thrown stoneware, matte cream glaze",
+    body:
+      "A wide-mouthed stoneware pitcher, wheel-thrown and finished in a soft matte cream glaze. Water at supper, milk at breakfast, a small bough of herbs the rest of the time."
+  },
+  {
+    handle: "board-planche",
+    name: "Board — Planche",
+    category: "Tabletop",
+    description:
+      "A long walnut serving board, hand-oiled. For bread, cheese, the long lunch that runs into afternoon.",
+    price: { inr: 22000, usd: 270 },
+    image: "/images/table-top/table6.png",
+    aspect: "portrait",
+    material: "Solid walnut, hand-oiled",
+    body:
+      "A long walnut serving board finished with a slow, hand-rubbed oil. For bread and cheese, for the long lunch that runs into the afternoon; the wood deepens with each use."
   }
 ];
 
-// Editorial curation layer — reorderable seasonal picks. A given product can
-// appear in more than one edit. Update `productHandles` each season to reshuffle.
+// Editorial curation layer — reorderable seasonal picks. A given category can
+// appear in more than one edit; the edit page rotates through products in
+// that category so each edit shows a different piece.
 export type EditSelection = {
   slug: string;
   number: string;
   title: string;
   intro: string;
-  productHandles: string[];
+  categories: Product["category"][];
 };
 
 export const EDITS: EditSelection[] = [
@@ -215,7 +945,7 @@ export const EDITS: EditSelection[] = [
     title: "Statement pieces",
     intro:
       "The pieces that command a room — a chandelier, a mirror, a sculpted form scaled to be seen.",
-    productHandles: ["chandelier-verre", "sculpture-ondu", "mirror-solis"]
+    categories: ["Lighting", "Sculptures", "Decorative Objects"]
   },
   {
     slug: "new",
@@ -223,7 +953,7 @@ export const EDITS: EditSelection[] = [
     title: "New pieces",
     intro:
       "This season's new work — recent arrivals from the studio floor.",
-    productHandles: ["pendant-lume", "objet-sillon"]
+    categories: ["Lighting", "Sculptures", "Vases"]
   },
   {
     slug: "limited",
@@ -231,7 +961,7 @@ export const EDITS: EditSelection[] = [
     title: "Limited pieces",
     intro:
       "Small editions and one-of-one commissions — signed, numbered, brief.",
-    productHandles: ["chandelier-verre", "objet-sillon"]
+    categories: ["Lighting", "Sculptures"]
   },
   {
     slug: "designer",
@@ -239,7 +969,7 @@ export const EDITS: EditSelection[] = [
     title: "Designer pieces",
     intro:
       "Signature works from the studio — the pieces the house is known for.",
-    productHandles: ["sculpture-ondu", "table-lamp-alba", "mirror-solis"]
+    categories: ["Sculptures", "Lighting", "Decorative Objects"]
   }
 ];
 

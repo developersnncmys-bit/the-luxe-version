@@ -3,31 +3,42 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { SafeImage } from "@/components/ui/safe-image";
-import type { Product } from "@/lib/content";
+import { productHref, type Product } from "@/lib/content";
 
 // Single-category product grid — no chip toolbar (the current category is
-// implicit in the URL). Uses the same product-card language as ObjectsCatalog
-// for visual continuity.
-export function CategoryGrid({ products }: { products: Product[] }) {
+// implicit in the URL). When the grid is split around an interstitial section
+// (e.g. savoir-faire), pass `showToolbar={false}` on the trailing half and
+// `totalCount` so the count still reflects all pieces in the category.
+export function CategoryGrid({
+  products,
+  showToolbar = true,
+  totalCount
+}: {
+  products: Product[];
+  showToolbar?: boolean;
+  totalCount?: number;
+}) {
+  const count = totalCount ?? products.length;
   return (
     <>
-      {/* Slim toolbar — FILTERS stub + piece count. Non-sticky. */}
-      <div className="border-t border-chalk/10 bg-ink">
-        <div className="mx-auto flex max-w-editorial items-center justify-between px-6 py-5 md:px-14 md:py-6">
-          <button
-            type="button"
-            className="hidden shrink-0 items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-chalk/85 transition-colors hover:text-chalk md:inline-flex"
-            aria-label="Open filters"
-          >
-            <FilterIcon />
-            Filters
-          </button>
-          <p className="ml-auto text-[11px] uppercase tracking-[0.28em] text-chalk/60">
-            {products.length} {products.length === 1 ? "piece" : "pieces"}
-          </p>
+      {showToolbar && (
+        <div className="border-t border-chalk/10 bg-ink">
+          <div className="mx-auto flex max-w-editorial items-center justify-between px-6 py-5 md:px-14 md:py-6">
+            <button
+              type="button"
+              className="hidden shrink-0 items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-chalk/85 transition-colors hover:text-chalk md:inline-flex"
+              aria-label="Open filters"
+            >
+              <FilterIcon />
+              Filters
+            </button>
+            <p className="ml-auto text-[11px] uppercase tracking-[0.28em] text-chalk/60">
+              {count} {count === 1 ? "piece" : "pieces"}
+            </p>
+          </div>
+          <div className="h-px w-full bg-chalk/10" />
         </div>
-        <div className="h-px w-full bg-chalk/10" />
-      </div>
+      )}
 
       <section className="relative bg-ink py-20 text-chalk md:py-28">
         <div className="mx-auto max-w-editorial px-6 md:px-14">
@@ -61,7 +72,7 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
       }}
       className="group"
     >
-      <Link href={`/products/${product.handle}`} className="block text-center">
+      <Link href={productHref(product)} className="block text-center">
         <div className="relative mb-8 aspect-[4/5] w-full overflow-hidden bg-onyx">
           <SafeImage
             src={product.image}

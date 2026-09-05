@@ -73,7 +73,7 @@ export function HouseCraft() {
               className="relative aspect-[4/5] w-full overflow-hidden bg-onyx"
             >
               <Image
-                src="/images/Lume-Alba.png"
+                src="/images/sculptures/scu4.png"
                 alt="A brass table lamp on the studio floor — the hand of the maker still on it"
                 fill
                 sizes="(min-width: 768px) 40vw, 100vw"

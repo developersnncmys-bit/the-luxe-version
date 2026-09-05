@@ -193,13 +193,15 @@ export function ChapterLook({
         </motion.button>
       </div>
 
-      {/* Right rail — clean stacked landscape cards, no console chrome (Chanel treatment) */}
+      {/* Right rail — clean stacked landscape cards, no console chrome (Chanel treatment).
+          Suppressed entirely when no thumbnails are provided, so the counter
+          doesn't linger as "00 / 00" on empty configurations. */}
       <motion.aside
         initial={{ opacity: 0, x: 24 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true, margin: "-10% 0px" }}
         transition={{ duration: 1.1, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-        className="absolute right-6 bottom-10 z-10 hidden flex-col items-end gap-4 md:right-10 md:bottom-14 md:flex"
+        className={`absolute right-6 bottom-10 z-10 hidden flex-col items-end gap-4 md:right-10 md:bottom-14 ${thumbnails.length > 0 ? "md:flex" : ""}`}
         aria-label="Film chapters"
       >
         {/* counter — subtle, no chrome */}

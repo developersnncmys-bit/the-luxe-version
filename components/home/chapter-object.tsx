@@ -10,44 +10,42 @@ import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
 import { IconPlay } from "@/components/ui/icons";
 import { SafeImage } from "@/components/ui/safe-image";
+import { PRODUCTS, type Product } from "@/lib/content";
 
 // A tile in either slot can now be a video OR an image — the discriminant is `kind`.
 type MediaTile =
   | { kind: "video"; src: string; poster: string; label: string; kicker: string }
   | { kind: "image"; src: string; alt: string; label: string; kicker: string };
 
-// Beat 1 — Chandelier hero + Living Room context inset
-const BEAT_1_HERO: MediaTile = {
-  kind: "image",
-  src: "/images/lighting/light1.png",
-  alt: "The Sculptural Chandelier",
-  kicker: "Lighting",
-  label: "The Sculptural Chandelier"
-};
-const BEAT_1_INSET: MediaTile = {
-  kind: "video",
-  src: "/images/living-room1.mp4",
-  // NOTE: filename on disk is capital-L `Living-room1.png` — must match exactly on Vercel/Linux.
-  poster: "/images/Living-room1.png",
-  kicker: "In Situ",
-  label: "In the Living Room"
-};
+// Category order for the beats — matches the home Collection section so both
+// grids walk the house in the same rhythm. First product from each category
+// supplies the hero image + label; its lifestyleImage becomes the inset.
+const CATEGORY_ORDER: Product["category"][] = [
+  "Sculptures",
+  "Vases"
+];
 
-// Beat 2 — Sculptural showpiece hero + Sitting Room context inset (mirrored)
-const BEAT_2_HERO: MediaTile = {
-  kind: "image",
-  src: "/images/sculptures/scu2.png",
-  alt: "The Carved Form",
-  kicker: "Showpiece",
-  label: "The Carved Form"
-};
-const BEAT_2_INSET: MediaTile = {
-  kind: "image",
-  src: "/images/smiplicity-section.png",
-  alt: "In the Sitting Room",
-  kicker: "In Situ",
-  label: "In the Sitting Room"
-};
+type Beat = { hero: MediaTile; inset: MediaTile };
+
+const BEATS: Beat[] = CATEGORY_ORDER
+  .map((cat) => PRODUCTS.find((p) => p.category === cat))
+  .filter((p): p is Product => Boolean(p))
+  .map((product) => ({
+    hero: {
+      kind: "image" as const,
+      src: product.image,
+      alt: product.name,
+      kicker: product.category,
+      label: product.name
+    },
+    inset: {
+      kind: "image" as const,
+      src: product.lifestyleImage ?? product.image,
+      alt: `${product.name} in situ`,
+      kicker: "In Situ",
+      label: `In the Room · ${product.category}`
+    }
+  }));
 
 export function ChapterObject() {
   const ref = useRef<HTMLElement>(null);
@@ -56,10 +54,9 @@ export function ChapterObject() {
     offset: ["start end", "end start"]
   });
 
-  const yFilm1 = useTransform(scrollYProgress, [0, 1], ["-4%", "6%"]);
-  const yPiece1 = useTransform(scrollYProgress, [0, 1], ["-10%", "6%"]);
-  const yFilm2 = useTransform(scrollYProgress, [0, 1], ["-4%", "6%"]);
-  const yPiece2 = useTransform(scrollYProgress, [0, 1], ["-10%", "6%"]);
+  // Shared parallax offsets — same subtle drift for every beat's hero and inset.
+  const yHero = useTransform(scrollYProgress, [0, 1], ["-4%", "6%"]);
+  const yInset = useTransform(scrollYProgress, [0, 1], ["-10%", "6%"]);
 
   return (
     <section
@@ -92,26 +89,19 @@ export function ChapterObject() {
           </motion.h2>
         </div>
 
-        {/* Beat 1 — HERO card LEFT (Living Room image), inset TOP-RIGHT (dining video) */}
-        <HeroPlusInset
-          hero={BEAT_1_HERO}
-          inset={BEAT_1_INSET}
-          yHero={yFilm1}
-          yInset={yPiece1}
-          mirror={false}
-        />
-
-        {/* Beat 2 — HERO card RIGHT (Sitting Room image), inset TOP-LEFT (pendant image) — mirrored */}
-        <div className="mt-40 md:mt-64">
-          <HeroPlusInset
-            hero={BEAT_2_HERO}
-            inset={BEAT_2_INSET}
-            yHero={yFilm2}
-            yInset={yPiece2}
-            mirror
-          />
-        </div>
-
+        {/* One beat per category — alternating mirror for editorial rhythm.
+            Spacing between beats matches the previous 40/64 gap. */}
+        {BEATS.map((beat, i) => (
+          <div key={beat.hero.label} className={i === 0 ? "" : "mt-40 md:mt-64"}>
+            <HeroPlusInset
+              hero={beat.hero}
+              inset={beat.inset}
+              yHero={yHero}
+              yInset={yInset}
+              mirror={i % 2 === 1}
+            />
+          </div>
+        ))}
       </div>
     </section>
   );

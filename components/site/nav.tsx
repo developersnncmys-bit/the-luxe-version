@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import clsx from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
 import { IconSearch, IconAccount, IconHeart, IconBag } from "@/components/ui/icons";
+import { useStore } from "@/components/store/store-provider";
 
 const PRIMARY_LINKS: Array<{ href: string; label: string; tag?: string }> = [
   { href: "/", label: "Home" },
@@ -49,7 +50,17 @@ export function Nav() {
   const [navHovered, setNavHovered] = useState(false);
   const [overLight, setOverLight] = useState(false);
   const pathname = usePathname();
+  const { openDrawer, cartCount, wishlist, user } = useStore();
+  const wishlistCount = wishlist.length;
+  const isSignedIn = !!user;
   const isProductPage = pathname.startsWith("/collections/");
+  // Three-or-more segments under /collections → product detail page.
+  // Distinct from `isProductPage` (which covers any collections subpath and
+  // drives the white/ink nav styling); this narrower flag suppresses the
+  // auto-dropdown pill that would otherwise sit on top of the product hero.
+  const isProductDetailPage =
+    pathname.startsWith("/collections/") &&
+    pathname.split("/").filter(Boolean).length >= 3;
 
   // Exact match for "/" (otherwise every route matches); prefix match for the
   // rest so /collections/showpieces highlights /collections in the top nav.
@@ -146,7 +157,11 @@ export function Nav() {
         onMouseEnter={() => setNavHovered(true)}
         onMouseLeave={() => setNavHovered(false)}
         className={clsx(
-          "fixed inset-x-0 top-0 z-50 text-chalk transition-transform duration-500 ease-silk",
+          // group/nav lives on <header> (not the inner bar) so that
+          // group-hover/nav:* keeps firing while the mouse is on the floating
+          // dropdown panel below the bar — the panel is a header child but a
+          // sibling of the bar, so CSS :hover on the bar itself would drop.
+          "group/nav fixed inset-x-0 top-0 z-50 text-chalk transition-transform duration-500 ease-silk",
           footerRevealed && !menuOpen ? "-translate-y-full" : "translate-y-0"
         )}
       >
@@ -200,16 +215,16 @@ export function Nav() {
         {/* Full navbar — visible only over the hero. Fades out once pastHero fires. */}
         <div
           className={clsx(
-            "group/nav w-full border-b transition-[background-color,border-color,color,backdrop-filter,opacity] duration-500 ease-silk",
+            "w-full border-b transition-[background-color,border-color,color,backdrop-filter,opacity] duration-500 ease-silk",
             menuOpen
               ? "border-transparent bg-transparent"
               : isProductPage
                 ? // Product pages get the inverted look permanently — white bar, ink text.
                   "border-ink/10 bg-white text-ink"
                 : scrolled
-                  ? "border-chalk/10 bg-ink/75 backdrop-blur-md hover:border-ink/10 hover:bg-white hover:text-ink hover:backdrop-blur-none"
+                  ? "border-chalk/10 bg-ink/75 backdrop-blur-md group-hover/nav:border-ink/10 group-hover/nav:bg-white group-hover/nav:text-ink group-hover/nav:backdrop-blur-none"
                   : // At the top (over the hero) — solid dark bar; on hover, whole strip inverts to white with dark text (Chanel-style).
-                    "border-transparent bg-ink hover:bg-white hover:text-ink",
+                    "border-transparent bg-ink group-hover/nav:bg-white group-hover/nav:text-ink",
             pastHero && !menuOpen && !isProductPage && "pointer-events-none opacity-0"
           )}
         >
@@ -273,17 +288,45 @@ export function Nav() {
               )}
               aria-label="Utilities"
             >
-              <button className="p-1.5 transition-opacity hover:opacity-60" aria-label="Search">
+              <button
+                type="button"
+                onClick={() => openDrawer("search")}
+                className="p-1.5 transition-opacity hover:opacity-60"
+                aria-label="Search"
+              >
                 <IconSearch />
               </button>
-              <button className="p-1.5 transition-opacity hover:opacity-60" aria-label="Account">
+              <button
+                type="button"
+                onClick={() => openDrawer("account")}
+                className="relative p-1.5 transition-opacity hover:opacity-60"
+                aria-label={isSignedIn ? "My account" : "Sign in"}
+              >
                 <IconAccount />
+                {isSignedIn && (
+                  <span
+                    aria-hidden
+                    className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-current"
+                  />
+                )}
               </button>
-              <button className="hidden p-1.5 transition-opacity hover:opacity-60 md:inline" aria-label="Wishlist">
+              <button
+                type="button"
+                onClick={() => openDrawer("wishlist")}
+                className="relative hidden p-1.5 transition-opacity hover:opacity-60 md:inline"
+                aria-label={`Wishlist${wishlistCount > 0 ? ` (${wishlistCount})` : ""}`}
+              >
                 <IconHeart />
+                {wishlistCount > 0 && <NavBadge count={wishlistCount} />}
               </button>
-              <button className="p-1.5 transition-opacity hover:opacity-60" aria-label="Bag">
+              <button
+                type="button"
+                onClick={() => openDrawer("cart")}
+                className="relative p-1.5 transition-opacity hover:opacity-60"
+                aria-label={`Bag${cartCount > 0 ? ` (${cartCount})` : ""}`}
+              >
                 <IconBag />
+                {cartCount > 0 && <NavBadge count={cartCount} />}
               </button>
             </nav>
           </div>
@@ -323,7 +366,7 @@ export function Nav() {
         {/* Floating dark dropdown panel — appears below the navbar on hover.
             Only over the hero (before the compact panel takes over). */}
         <AnimatePresence>
-          {(navHovered || pathname.startsWith("/collections/")) && !menuOpen && !pastHero && (
+          {(navHovered || pathname.startsWith("/collections/")) && !menuOpen && !pastHero && !isProductDetailPage && (
             <motion.div
               key="nav-dropdown"
               initial={{ opacity: 0, y: -8 }}
@@ -441,5 +484,16 @@ export function Nav() {
         )}
       </AnimatePresence>
     </>
+  );
+}
+
+function NavBadge({ count }: { count: number }) {
+  return (
+    <span
+      aria-hidden
+      className="absolute -right-0.5 -top-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-current px-1 text-[9px] font-semibold leading-none"
+    >
+      <span className="mix-blend-difference text-white">{count}</span>
+    </span>
   );
 }

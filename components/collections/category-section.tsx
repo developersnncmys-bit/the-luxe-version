@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { SafeImage } from "@/components/ui/safe-image";
-import type { Product } from "@/lib/content";
+import { productHref, type Product } from "@/lib/content";
 
 type Props = {
   id: string;
@@ -112,7 +112,7 @@ function CategoryProduct({
       }}
       className="group flex flex-col"
     >
-      <Link href={`/products/${product.handle}`} className="flex flex-col">
+      <Link href={productHref(product)} className="flex flex-col">
         {/* Chanel pattern: category eyebrow + product name sit ABOVE the image. */}
         <p className="text-[10px] uppercase tracking-[0.32em] text-chalk/55">
           {product.category}
